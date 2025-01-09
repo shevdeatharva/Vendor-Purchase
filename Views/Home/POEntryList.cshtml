@@ -1,0 +1,123 @@
+﻿
+@{
+    ViewData["Title"] = "POEntryList";
+}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+    <h3 class="mb-3">Purchase List</h3>
+
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-secondary" onclick="location.href='@Url.Action("PurchaseMaster", "Form_Master")'">Create</button>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Code</th>
+                <th>Short Text</th>
+                <th>Quantity</th>
+                <th>Vendor</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th>Order Date</th>
+                <th>Unit</th>
+                <th>Exp Date</th>
+                <th colspan="2" class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="purchaseTableBody">
+            <!-- Sample row -->
+            <tr>
+                <td>001</td>
+                <td>Vendor 1</td>
+                <td>vendor1@example.com</td>
+                <td>1234567890</td>
+                <td>2025-12-31</td>
+                <td>2</td>
+                <td>2025-12-31</td>
+                <td>2</td>
+                <td>2025-12-31</td>
+                <td>
+                    <button class="btn btn-sm btn-success">Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </td>
+            </tr>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+</div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        loadPurchaseData();
+    });
+    function loadPurchaseData() {
+        $.ajax({
+            url: '/Home/GetPurchaseData', // Your controller action URL
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log("Venodr Data", data)
+                var vendorHtml = '';
+                data.forEach(function (purchase) {
+                    vendorHtml += `
+                    <tr>
+                                <td>${purchase.OrderNo}</td>
+                                    <td>${purchase.code}</td>
+                                    <td>${purchase.shortTxt}</td>
+                                        <td>${purchase.Name}</td>
+                                    <td>${purchase.ValidTill}</td>
+                                    <td>${purchase.OrderDate}</td>
+                                        <td>${purchase.OrderValue}</td>
+                                             <td>${purchase.Notes}</td>
+                                              <td>${purchase.Quantity}</td>
+                                               <td>${purchase.Rate}</td>
+                                                    <td>${purchase.Amount}</td>
+                                    <td>${purchase.Unit ? 'Yes' : 'No'}</td>
+                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="editPurchase(${purchase.OrderNo})">Edit</button>
+                        </td>
+                        <td>
+                                                        <button class="btn btn-sm btn-danger" onclick="deletePurchase(${purchase.OrderNo},${purchase.isActive})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                });
+                $('#purchaseTableBody').html(vendorHtml);
+
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading vendor data:', error);
+                $('#vendorData').html('<p>Error loading vendor data.</p>');
+            }
+        });
+
+    }
+    function editPurchase(code) {
+        window.location.href = '@Url.Action("PurchaseMaster","Form_Master")' + '?Code=' + encodeURIComponent(code);;
+    }
+    function deletePurchase(code, isActive) {
+            $.ajax({
+                url: '/Form_Master/DeletePurchaseDetail',
+                data: JSON.stringify({ Code: code }),
+                type: 'POST',
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        alert("Vendor has been deleted successfully");
+                        loadMaterialData();
+                    } else {
+                        alert({ message: "An error occurred" })
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    errorCallback({ message: "An error occurred" });
+                }
+            });
+    }
+</script>

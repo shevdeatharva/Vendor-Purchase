@@ -1,0 +1,195 @@
+﻿
+    <title>Vendor Entry Form</title>
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="~/js/script/baseservice.js"></script>
+         
+    <style>
+        .form-floating label {
+            padding: 0.65rem 0.75rem; /* Adjust padding for smaller inputs */
+        }
+    </style>
+    <div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+        <h4>Vendor Entry</h4>
+    <!-- Buttons -->
+
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <button type="submit" class="btn btn-success" onclick="SubmitVendorForm()" id="saveButton"> Save</button>
+                <button type="button" class="btn btn-success" id="updateButton" onclick="updateVendorForm()" style="display: none;">Update</button>
+            <button type="button" class="btn btn-secondary" onclick="location.href='@Url.Action("VendorDetailList", "Home")'">Cancel</button>
+    </div>
+    </div>
+    <form>
+        <div class="row">
+            <!-- Column 1 -->
+            <div class="col-md-6">
+                    <div class="form-floating mt-3 mb-3">
+                        <input type="text" class="form-control" id="name" placeholder="Name" />
+                        <label for="name">Name</label>
+                    </div>
+                <!-- Contact Email -->
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="email" placeholder="Contact Email" />
+                    <label for="email">Contact Email</label>
+                </div>
+                <!-- Valid Till Date -->
+                <div class="form-floating mb-3">
+                    <input type="date" class="form-control" id="validTill" placeholder="Valid Till Date" />
+                    <label for="validTill">Valid Till Date</label>
+                </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div class="col-md-6">
+                
+                <!-- Address Line 1 -->
+                <div class="form-floating mt-3 mb-3">
+                    <input type="text" class="form-control" id="address1" placeholder="Address Line 1" />
+                    <label for="address1">Address Line 1</label>
+                </div>
+               
+                <!-- Address Line 2 -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="address2" placeholder="Address Line 2" />
+                    <label for="address2">Address Line 2</label>
+                </div>
+                <!-- Contact Number -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="contactNo" placeholder="Contact No" />
+                    <label for="contactNo">Contact No</label>
+                </div>
+               
+            </div>
+            <!-- IsActive -->
+            <div class="form-check form-switch mb-3 mx-3">
+                <input class="form-check-input" type="checkbox" id="isActive" />
+                <label class="form-check-label" for="isActive">IsActive</label>
+            </div>
+        </div>
+
+     
+    </form>
+
+    </div>
+
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/boot@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function () {
+        getQueryStringValue('vendorCode');
+        
+    });
+    function SubmitVendorForm(){
+
+        var vendorDetail = {
+            Name: $('#name').val(),
+            Email: $('#email').val(),
+            AddressLine1: $('#address1').val(),
+            ValidTill: $('#validTill').val(),
+            Contact: $('#contactNo').val(),
+            AddressLine2: $('#address2').val(),
+            isChecked :$('#isActive').prop('checked')
+
+        };
+        console.log("kdflsfs", vendorDetail);
+        //BaseService('Form_Master', 'SaveVendorDetail', JSON.stringify(vendorDetail), function (response) {
+        //    alert(response.message);
+        //}, function (error) {
+        //    alert(error.message);
+        //});
+        $.ajax({
+            url: '/Form_Master/SaveVendorDetail',
+            data: JSON.stringify(vendorDetail),
+            type: 'POST', // POST, GET, PUT, DELETE, etc.
+            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
+            dataType: "json", // Expected response data type (e.g., JSON)
+            success: function (response) {
+                if (response.success) {
+                    console.log( response.message);
+                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+
+    function getQueryStringValue(key) {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(key);
+    }
+
+    var vendorCode = getQueryStringValue('vendorCode');
+    GetVendorDataByCodeId(vendorCode);
+    console.log('Vendor Code:', vendorCode);
+    function GetVendorDataByCodeId(vendorCode){
+        $.ajax({
+            url: '/Form_Master/GetVendorDataByVendorCode',
+            data: JSON.stringify({Code:vendorCode}),
+            type: 'POST',
+            contentType: "application/json", 
+            dataType: "json",
+            success: function (response) {
+                if (response) {
+                    console.log("vendor res", response);
+                    const item = response[0];
+                    document.getElementById("name").value = item.name || "";
+                    document.getElementById("email").value = item.email || "";
+                    document.getElementById("validTill").value = item.validTill
+                        ? new Date(item.validTill).toISOString().split("T")[0]
+                        : ""; // Format date to yyyy-MM-dd for input[type="date"]
+                    document.getElementById("address1").value = item.addressLine1 || "";
+                    document.getElementById("address2").value = item.addressLine2 || "";
+                    document.getElementById("contactNo").value = item.contact || "";
+                    document.getElementById("isActive").checked = item.isChecked || false;
+                    document.getElementById("saveButton").style.display = "none";
+                    document.getElementById("updateButton").style.display = "inline-block";
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+    function updateVendorForm(){
+        var vendorDetail = {
+            Name: $('#name').val(),
+            Email: $('#email').val(),
+            AddressLine1: $('#address1').val(),
+            ValidTill: $('#validTill').val(),
+            Contact: $('#contactNo').val(),
+            AddressLine2: $('#address2').val(),
+            isChecked: $('#isActive').prop('checked')
+            Code: vendorCode
+        };
+        $.ajax({
+            url: '/Form_Master/UpdateVendorDetail',
+            data: JSON.stringify(vendorDetail),
+            type: 'POST', // POST, GET, PUT, DELETE, etc.
+            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
+            dataType: "json", // Expected response data type (e.g., JSON)
+            success: function (response) {
+                if (response.success) {
+                    console.log(response.message);
+                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+        </script>

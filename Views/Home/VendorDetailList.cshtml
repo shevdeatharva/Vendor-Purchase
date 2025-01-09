@@ -1,0 +1,106 @@
+﻿
+    <title>Vendor List</title>
+    <div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+
+   </div>
+    <div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+        <h3 class="mb-3">Vendor List</h3>
+        <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-secondary" onclick="location.href='@Url.Action("VendorMaster", "Form_Master")'">Create</button>
+        </div>
+        </div>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Contact Email</th>
+                    <th>Contact Number</th>
+                    <th>Valid Till Date</th>
+                    <th>Is Active</th>
+                    <th colspan="2" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="vendorTableBody">
+                <!-- Rows will be added dynamically here -->
+            </tbody>
+        </table>
+    </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+            // Example: Load data on page load
+            loadVendorData();
+        });
+        function loadVendorData() {
+            $.ajax({
+            url: '/Home/GetVendorData', // Your controller action URL
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log("Venodr Data", data)
+                var vendorHtml = '';
+                data.forEach(function (vendor) {
+                    vendorHtml += `
+            <tr>
+                <td>${vendor.code}</td>
+                <td>${vendor.name}</td>
+                <td>${vendor.email}</td>
+                <td>${vendor.contact}</td>
+                <td>${vendor.validTill}</td>
+                <td>${vendor.isChecked ? 'Yes' : 'No'}</td>
+                <td>
+                    <button class="btn btn-sm btn-success" onclick="editVendor(${vendor.code})">Edit</button>
+                </td>
+                <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteVendor(${vendor.code},${vendor.isChecked})">Delete</button>
+                </td>
+            </tr>
+        `;
+                });
+                $('#vendorTableBody').html(vendorHtml);
+
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading vendor data:', error);
+                    $('#vendorData').html('<p>Error loading vendor data.</p>');
+                }
+            });
+            
+    }
+    function editVendor(code){
+        window.location.href = '@Url.Action("VendorMaster","Form_Master")' + '?vendorCode=' + encodeURIComponent(code);;
+    }
+    function deleteVendor(code,isChecked){
+        if (isChecked == false) {
+            $.ajax({
+                url: '/Form_Master/DeleteVendorDetail',
+                data: JSON.stringify({Code:code}),
+                type: 'POST', 
+                contentType: "application/json", 
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        alert("Vendor has been deleted successfully");
+                        loadVendorData();
+                    } else {
+                        alert({ message: "An error occurred" })
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    errorCallback({ message: "An error occurred" });
+                }
+            });
+        }else{
+            alert(" Vendor is active, so It cannot be deleted");
+        }
+    }
+</script>

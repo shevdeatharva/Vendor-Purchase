@@ -1,8 +1,11 @@
+using VendorPurchaseProject.DBHandler;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddSingleton<DBService>();
+builder.Services.AddScoped<IDBService, DBService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

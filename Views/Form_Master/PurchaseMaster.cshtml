@@ -1,0 +1,410 @@
+﻿
+@{
+    ViewData["Title"] = "PurchaseMaster";
+}
+
+<title>Purchase Entry Form</title>
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5>Purchase Order Entry</h5>
+            <!-- Save and Cancel Buttons -->
+            <div class="col-12 mt-4 text-end">
+                <button type="submit" class="btn btn-success" onclick="SavePurchaseDetail()" id="submitButton">Save</button>
+                <button type="button" class="btn btn-success" id="updateButton" onclick="updatePurchaseForm()" style="display: none;">Update</button>
+                <button type="button" class="btn btn-secondary" onclick="location.href='@Url.Action("POEntryList", "Home")'">Cancel</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="unit" placeholder="Unit" />
+                            <label for="unit">Unit</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="orderDate">
+                                <option value="" selected>Select orderDate</option>
+                            </select>
+                            <label for="orderDate">Order Date</label>
+                        </div>
+                    </div>
+
+                    <!-- Vendor -->
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <select class="form-select" id="vendor">
+                                <option value="" selected>Select vendor</option>
+                            </select>
+                            <label for="vendor">Vendor</label>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <textarea class="form-control" id="notes" placeholder="Notes" style="height: 100px;"></textarea>
+                            <label for="notes">Notes</label>
+                        </div>
+                    </div>
+
+                    <!-- Order Value -->
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="orderValue" placeholder="Order Value" />
+                            <label for="orderValue">Order Value</label>
+                        </div>
+                    </div>
+
+                    <!-- Material, Code, Short Text, and Unit -->
+                    
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="code">
+                                <option value="" selected>Select Code</option>
+                            </select>
+                            <label for="code">Code</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="shortText">
+                                <option value="" selected>Select ShortTxt</option>
+                            </select>
+                            <label for="shortText">Short Text</label>
+                        </div>
+                    </div>
+                    
+
+                    <!-- Quantity, Rate, Amount, Expected Date -->
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="quantity" placeholder="Quantity" />
+                            <label for="quantity">Quantity</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="rate" placeholder="Rate" />
+                            <label for="rate">Rate</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="amount" placeholder="Amount" />
+                            <label for="amount">Amount</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="expectedDate">
+                                <option value="" selected>Select expectedDate</option>
+                            </select>
+                            <label for="expectedDate">Expected Date</label>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-primary" onclick="AddPurchaseToTable()">Add Line</button>
+                            <button type="button" class="btn btn-secondary">Update Line</button>
+                            <button type="button" class="btn btn-danger" onclick="removeSelectedLines()">Remove Line</button>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="col-12 mt-4">
+                        <table class="table table-bordered">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Code</th>
+                                    <th>Quantity</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                    <th>Exp Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchaseTableBody">
+                                <tr>
+                                    <td><input type="checkbox" /></td>
+                                    <td>Example Code</td>
+                                    <td>10</td>
+                                    <td>100</td>
+                                    <td>1000</td>
+                                    <td>2025-01-10</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+             
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    .form-floating label {
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+
+<script type="text/javascript">
+    var purchaseDetail={};
+    $(document).ready(function () {
+        loadMaterialData();
+        loadVendorData();
+        getQueryStringValue('Code');
+    });
+    function getQueryStringValue(key) {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(key);
+    }
+
+    var vendorCode = getQueryStringValue('Code');
+    GetPurchaseDataByCodeId(vendorCode);
+    function loadMaterialData() {
+        $.ajax({
+            url: '/Home/GetMaterialData',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log("Material Data", data);
+
+                
+                var dropdown = $('#shortText'); 
+                var dropdownCode = $('#code');
+                dropdown.empty();
+                dropdownCode.empty();
+                dropdown.append('<option value="" selected>Select ShortTxt</option>');
+                dropdownCode.append('<option value="" selected>Select ShortTxt</option>');
+                // Iterate over the data and append options to the dropdown
+                data.forEach(function (material) {
+                    dropdown.append(new Option(material.shortTxt));
+                    dropdownCode.append(new Option( material.code));
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading material data:', error);
+                $('#vendorData').html('<p>Error loading material data.</p>');
+            }
+        });
+    }
+    function loadVendorData() {
+        $.ajax({
+            url: '/Home/GetVendorData', // Your controller action URL
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log("Vendor Data", data);
+
+
+                var dropdownexpectedDate = $('#expectedDate');
+                var dropdownOrderDate = $('#orderDate');
+                var dropdownCodeVendor = $('#vendor');
+                dropdownexpectedDate.empty();
+                dropdownOrderDate.empty();
+                dropdownCodeVendor.empty();
+                dropdownexpectedDate.append('<option value="" selected>DD:MM:YYYY</option>');
+                dropdownOrderDate.append('<option value="" selected>DD:MM:YYYY</option>');
+                dropdownCodeVendor.append('<option value="" selected>Select Vendor</option>');
+                // Iterate over the data and append options to the dropdown
+                data.forEach(function (vendor) {
+                    dropdownexpectedDate.append(new Option(vendor.validTill));
+                    dropdownOrderDate.append(new Option(vendor.orderDate));
+                    dropdownCodeVendor.append(new Option(vendor.name));
+                });
+
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading vendor data:', error);
+                $('#vendorData').html('<p>Error loading vendor data.</p>');
+            }
+        });
+
+    }
+    function AddPurchaseToTable() {
+          purchaseDetail = {
+            OrderDate: $('#orderDate').val(),
+            Vendor: $('#vendor').val(),
+            Notes: $('#notes').val(),
+            OrderValue: $('#orderValue').val(),
+            Code: $('#code').val(),
+            ShortTxt: $('#shortText').val(),
+            Unit: $('#unit').val(),
+            Quantity: $('#quantity').val(),
+            Rate: $('#rate').val(),
+            ExpectedDate: $('#expectedDate').val(),
+            Amount: (quantity * rate).toFixed(2),
+        };
+        // Get values from the form
+        var orderNo = $('#orderNo').val();
+        var orderDate = $('#orderDate').val();
+        var vendor = $('#vendor').val();
+        var notes = $('#notes').val();
+        var orderValue = $('#orderValue').val();
+        var code = $('#code').val();
+        var shortText = $('#shortText').val();
+        var unit = $('#unit').val();
+        var quantity = $('#quantity').val();
+        var rate = $('#rate').val();
+        var expectedDate = $('#expectedDate').val();
+        var amount = (quantity * rate).toFixed(2);
+
+        // Validate required fields (you can modify this as per your requirements)
+        if (!code || !shortText || !quantity || !rate || !amount || !expectedDate) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        // Create new row with the collected data
+        var newRow = `
+            <tr>
+                <td><input type="checkbox" /></td>
+                <td>${code}</td>
+                <td>${quantity}</td>
+                <td>${rate}</td>
+                <td>${amount}</td>
+                <td>${expectedDate}</td>
+            </tr>
+        `;
+
+        // Append the new row to the table
+        $('#purchaseTableBody').append(newRow);
+
+        // Clear the form fields after adding the data to the table (optional)
+        $('#orderNo').val('');
+        $('#orderDate').val('');
+        $('#vendor').val('');
+        $('#notes').val('');
+        $('#orderValue').val('');
+        $('#code').val('');
+        $('#shortText').val('');
+        $('#unit').val('');
+        $('#quantity').val('');
+        $('#rate').val('');
+        $('#amount').val('');
+        $('#expectedDate').val('');
+    }
+    function removeSelectedLines() {
+        // Find all checked checkboxes and remove the corresponding rows
+        $('#purchaseTableBody').find('input.row-checkbox:checked').each(function () {
+            $(this).closest('tr').remove();
+        });
+    }
+
+    function SavePurchaseDetail() {
+         purchaseDetail = {
+            OrderDate: $('#orderDate').val(),
+            Vendor: $('#vendor').val(),
+            Notes: $('#notes').val(),
+            OrderValue: $('#orderValue').val(),
+            Code: $('#code').val(),
+            ShortTxt: $('#shortText').val(),
+            Unit: $('#unit').val(),
+            Quantity: $('#quantity').val(),
+            Rate: $('#rate').val(),
+            ExpectedDate: $('#expectedDate').val(),
+            Amount: (quantity * rate).toFixed(2),
+        };
+        $.ajax({
+            url: '/Form_Master/SavePurchaseDetail',
+            data: JSON.stringify(purchaseDetail),
+            type: 'POST',
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    console.log(response.message);
+                    window.location.href = '@Url.Action("POEntryList", "Home")';
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+    function GetPurchaseDataByCodeId(vendorCode) {
+        $.ajax({
+            url: '/Form_Master/sp_get_vp_Purchase_Master_Detail_ByCode',
+            data: JSON.stringify({ Code: vendorCode }),
+            type: 'POST',
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+                if (response) {
+                    console.log("vendor res", response);
+                    const item = response[0];
+                    document.getElementById("orderDate").value = item.OrderDate || "";
+                    document.getElementById("vendor").value = item.Vendor || "";
+                    document.getElementById("notes").value = item.Notes
+                        || ""; // Format date to yyyy-MM-dd for input[type="date"]
+                    document.getElementById("orderValue").value = item.OrderValue || "";
+                    document.getElementById("code").value = item.Code || "";
+                    document.getElementById("shortText").value = item.ShortText || "";
+                    document.getElementById("unit").value = item.Unit || "";
+                    document.getElementById("quantity").value = item.Quantity || "";
+                    document.getElementById("rate").value = item.Rate || "";
+                    document.getElementById("expectedDate").value = item.ExpectedDate || "";
+                    document.getElementById("amount").value = item.Amount || "";
+                    
+                    document.getElementById("saveButton").style.display = "none";
+                    document.getElementById("updateButton").style.display = "inline-block";
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+    function updateVendorForm() {
+       var purchasesDetail = {
+            OrderDate: $('#orderDate').val(),
+            Vendor: $('#vendor').val(),
+            Notes: $('#notes').val(),
+            OrderValue: $('#orderValue').val(),
+            Code: $('#code').val(),
+            ShortTxt: $('#shortText').val(),
+            Unit: $('#unit').val(),
+            Quantity: $('#quantity').val(),
+            Rate: $('#rate').val(),
+            ExpectedDate: $('#expectedDate').val(),
+            Amount: (quantity * rate).toFixed(2),
+        };
+        $.ajax({
+            url: '/Form_Master/UpdatePurchaseDetail',
+            data: JSON.stringify(purchasesDetail),
+            type: 'POST',
+            contentType: "application/json", 
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    console.log(response.message);
+                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                } else {
+                    alert({ message: "An error occurred" })
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+    }
+    </script>

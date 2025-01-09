@@ -1,0 +1,102 @@
+﻿
+@{
+    ViewData["Title"] = "PurchaseEntryList";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+    <h3 class="mb-3">Material List</h3>
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-secondary" onclick="location.href='@Url.Action("MaterialMaster", "Form_Master")'">Create</button>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Code</th>
+                <th>Short Text</th>
+                <th>Long Text</th>
+                <th>Reorder Level</th>
+                <th>Min Order Quantity</th>
+                <th>Unit</th>
+                <th>Is Active</th>
+                <th colspan="2" class="text-center">Actions</th>
+            </tr>
+        </thead>
+            <tbody id="materialTableBody">
+           
+        </tbody>
+    </table>
+</div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        loadMaterialData();
+    });
+    function loadMaterialData() {
+        $.ajax({
+            url: '/Home/GetMaterialData', // Your controller action URL
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log("Venodr Data", data)
+                var vendorHtml = '';
+                data.forEach(function (material) {
+                    vendorHtml += `
+                <tr>
+                        <td>${material.code}</td>
+                            <td>${material.shortTxt}</td>
+                            <td>${material.longTxt}</td>
+                        <td>${material.reOrderLevel}</td>
+                        <td>${material.minOrderQuantity}</td>
+                            <td>${material.unit}</td>
+                        <td>${material.isActive ? 'Yes' : 'No'}</td>
+                    <td>
+                                <button class="btn btn-sm btn-success" onclick="editMaterial(${material.code})">Edit</button>
+                    </td>
+                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${material.code},${material.isActive})">Delete</button>
+                    </td>
+                </tr>
+            `;
+                });
+                $('#materialTableBody').html(vendorHtml);
+
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading vendor data:', error);
+                $('#vendorData').html('<p>Error loading vendor data.</p>');
+            }
+        });
+        
+    }
+    function editMaterial(code) {
+        window.location.href = '@Url.Action("MaterialMaster","Form_Master")' + '?Code=' + encodeURIComponent(code);;
+    }
+    function deleteMaterial(code, isActive) {
+        if (isActive == false) {
+            $.ajax({
+                url: '/Form_Master/DeleteMaterialDetail',
+                data: JSON.stringify({ Code: code }),
+                type: 'POST',
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        alert("Vendor has been deleted successfully");
+                        loadMaterialData();
+                    } else {
+                        alert({ message: "An error occurred" })
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    errorCallback({ message: "An error occurred" });
+                }
+            });
+        } else {
+            alert(" Material is active, so It cannot be deleted");
+        }
+    }
+</script>
