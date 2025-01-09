@@ -99,7 +99,7 @@ namespace VendorPurchaseProject.Controllers
                 parameters.Add("@AddressLine2", vendorDetail.AddressLine2);
                 parameters.Add("@isChecked", vendorDetail.isChecked);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                await _dbService.EditData("sp_del_vp_Vendor_Master", parameters);
+                await _dbService.EditData("sp_upd_vp_Vendor_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
                 var result = new { success = true, message = res };
                 return Json(result);
@@ -190,7 +190,7 @@ namespace VendorPurchaseProject.Controllers
         public async Task<List<PurchaseModel>> GetPurchaseDataByVendorCode([FromBody] PurchaseModel vendorDetail)
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@Code", vendorDetail.Code);
+            parameters.Add("@OrderNo", vendorDetail.OrderNo);
             var vendorData = await _dbService.GetAll<PurchaseModel>("sp_get_vp_Purchase_Master_Detail_ByCode", parameters);
             return vendorData;
         }
@@ -230,7 +230,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Code", purchaseDetail.Code);
+                parameters.Add("@OrderNo", purchaseDetail.OrderNo);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 await _dbService.EditData("sp_del_vp_Purchase_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
@@ -249,6 +249,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
+                parameters.Add("@OrderNo", purchaseDetail.OrderNo);
                 parameters.Add("@Code", purchaseDetail.Code);
                 parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
                 parameters.Add("@OrderDate", purchaseDetail.OrderDate);
@@ -260,8 +261,6 @@ namespace VendorPurchaseProject.Controllers
                 parameters.Add("@ValidTill", purchaseDetail.ValidTill);
                 parameters.Add("@Notes", purchaseDetail.Notes);
                 parameters.Add("@Unit", purchaseDetail.Unit);
-                parameters.Add("@Code", purchaseDetail.Code);
-                parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 await _dbService.EditData("sp_upd_vp_Purchase_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
