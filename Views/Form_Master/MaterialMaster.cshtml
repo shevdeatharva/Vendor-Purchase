@@ -9,7 +9,7 @@
                 <h4 class="mb-0">Material Entry Form</h4>
             <div class="row mb-3">
                 <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-success" onclick="SubmitmaterialForm()" id="submitButton">Save</button>
+                    <button type="submit" class="btn btn-success" onclick="SubmitmaterialForm()" id="saveButton">Save</button>
                     <button type="button" class="btn btn-success" id="updateButton" onclick="updateMaterialForm()" style="display: none;">Update</button>
                     <button type="reset" class="btn btn-secondary" onclick="location.href='@Url.Action("MaterialEntryList", "Home")'">Cancel</button>
                 </div>
@@ -20,15 +20,22 @@
                     <!-- Row 1 -->
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="text" class="form-control" id="shortText" placeholder="Enter Short Text" required>
-                                <label for="shortText">Short Text</label>
-                            </div>
+                            <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="code" placeholder="code" readonly/>
+                        <label for="code">Code</label>
+                        </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" class="form-control" id="reorderLevel" placeholder="Enter Reorder Level">
+                                <input type="tel" class="form-control" id="reorderLevel" placeholder="Enter Reorder Level">
                                 <label for="reorderLevel">Reorder Level</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                             
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="shortText" placeholder="Enter Short Text" required>
+                                <label for="shortText">Short Text</label>
                             </div>
                         </div>
                     </div>
@@ -48,14 +55,10 @@
                         
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="number" class="form-control" id="minOrderQty" placeholder="Enter Min Order Quantity">
+                                <input type="tel" class="form-control" id="minOrderQty" placeholder="Enter Min Order Quantity">
                                 <label for="minOrderQty">Min Order Quantity</label>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Row 4 -->
-                    <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="form-floating">
                                 <input type="text" class="form-control" id="unit" placeholder="Enter Unit">
@@ -63,13 +66,12 @@
                             </div>
                         </div>
                         <div class="col-md-6 mt-3">
-                            <div class="form-check mt-2">
+                            <div class="form-check form-switch mb-3">
                                 <input class="form-check-input" type="checkbox" id="isActive">
-                                <label class="form-check-label" for="isActive">Is Active</label>
+                                <label class="form-check-label" for="isActive">Active</label>
                             </div>
                         </div>
                     </div>
-
                    
                 </form>
             </div>
@@ -84,10 +86,34 @@
         var urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(key);
     }
+     function formValidation(){
+       var name= document.getElementById("shortText").value ;
+       var email= document.getElementById("reorderLevel").value;
+        var contactNo=document.getElementById("longText").value;
+        var isActive=document.getElementById("minOrderQty").value;
+        var address1=document.getElementById("unit").value;
+        var address2=document.getElementById("isActive").checked;
+        if (
+            !isActive||
+            !address1||
+            !address2
+            ||!contactNo|| !email|| !name
+        ){
+            alert("Please fill up the required field");
+            return false;
+        }
+        return true;
+        }
 
     var vendorCode = getQueryStringValue('Code');
+    if(vendorCode!=null){
+
     GetVendorDataByCodeId(vendorCode);
+    }
         function SubmitmaterialForm(){
+            if(!formValidation()){
+            return;
+        }
 
         var materialDetail = {
             ShortTxt: $('#shortText').val(),
@@ -120,7 +146,7 @@
       function GetVendorDataByCodeId(vendorCode){
         $.ajax({
             url: '/Form_Master/GetMaterialDataByVendorCode',
-            data: JSON.stringify({Code:vendorCode}),
+            data: JSON.stringify({Material_Id:vendorCode}),
             type: 'POST',
             contentType: "application/json", 
             dataType: "json",
@@ -128,12 +154,13 @@
                 if (response) {
                     console.log("vendor res", response);
                     const item = response[0];
-                    document.getElementById("shortText").value = item.ShortTxt || "";
-                    document.getElementById("reorderLevel").value = item.ReOrderLevel || "";
-                    document.getElementById("longText").value = item.LongTxt
+                    document.getElementById("code").value = item.code || "";
+                    document.getElementById("shortText").value = item.shortTxt || "";
+                    document.getElementById("reorderLevel").value = item.reOrderLevel || "";
+                    document.getElementById("longText").value = item.longTxt
                         || ""; // Format date to yyyy-MM-dd for input[type="date"]
-                    document.getElementById("minOrderQty").value = item.MinOrderQuantity || "";
-                    document.getElementById("unit").value = item.Unit || "";
+                    document.getElementById("minOrderQty").value = item.minOrderQuantity || "";
+                    document.getElementById("unit").value = item.unit || "";
                     document.getElementById("isActive").checked = item.isActive || false;
                     document.getElementById("saveButton").style.display = "none";
                     document.getElementById("updateButton").style.display = "inline-block";
@@ -148,24 +175,28 @@
         });
     }
     function updateMaterialForm(){
-        var materialDetail = {
+        if(!formValidation()){
+            return;
+        }
+        var materialDetails = {
             ShortTxt: $('#shortText').val(),
             ReOrderLevel: $('#reorderLevel').val(),
             LongTxt: $('#longText').val(),
             MinOrderQuantity: $('#minOrderQty').val(),
             Unit: $('#unit').val(),
-            isActive: $('#isActive').prop('checked')
+            isActive: $('#isActive').prop('checked'),
+            Material_Id: vendorCode
         };
         $.ajax({
             url: '/Form_Master/UpdateMaterialDetail',
-            data: JSON.stringify(materialDetail),
-            type: 'POST', // POST, GET, PUT, DELETE, etc.
-            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
-            dataType: "json", // Expected response data type (e.g., JSON)
+            data: JSON.stringify(materialDetails),
+            type: 'POST',
+            contentType: "application/json", 
+            dataType: "json", 
             success: function (response) {
                 if (response.success) {
                     console.log(response.message);
-                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                    window.location.href = '@Url.Action("MaterialEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
                 }
@@ -176,4 +207,5 @@
             }
         });
     }
+   
         </script>

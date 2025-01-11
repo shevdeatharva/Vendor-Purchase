@@ -2,7 +2,8 @@
 {
     public class MaterialModel
     {
-        public int Code { get; set; }
+        public int Material_Id { get; set; }
+        public string ?Code { get; set; }
         public string ShortTxt { get; set; }
         public string ReOrderLevel { get; set; }
         public string LongTxt { get; set; }

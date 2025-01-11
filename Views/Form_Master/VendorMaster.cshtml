@@ -26,13 +26,18 @@
             <!-- Column 1 -->
             <div class="col-md-6">
                     <div class="form-floating mt-3 mb-3">
+                        <input type="text" class="form-control" id="code" placeholder="code" readonly/>
+                        <label for="code">Code</label>
+                    </div>
+                    <div class="form-floating mt-3 mb-3">
                         <input type="text" class="form-control" id="name" placeholder="Name" />
                         <label for="name">Name</label>
                     </div>
                 <!-- Contact Email -->
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="email" placeholder="Contact Email" />
+                        <input type="email" class="form-control" id="email" placeholder="Contact Email" oninput="validateEmail()" />
                     <label for="email">Contact Email</label>
+                        <small id="emailError" style="color: red; display: none;">Please enter a valid email syntax.</small>
                 </div>
                 <!-- Valid Till Date -->
                 <div class="form-floating mb-3">
@@ -57,15 +62,16 @@
                 </div>
                 <!-- Contact Number -->
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="contactNo" placeholder="Contact No" />
+                        <input type="text" class="form-control" id="contactNo" placeholder="Contact No" oninput="validateMobile()" />
                     <label for="contactNo">Contact No</label>
+                        <small id="contactError" style="color: red; display: none;">Please enter a 10-digit valid mobile number.</small>
                 </div>
                
             </div>
             <!-- IsActive -->
             <div class="form-check form-switch mb-3 mx-3">
                 <input class="form-check-input" type="checkbox" id="isActive" />
-                <label class="form-check-label" for="isActive">IsActive</label>
+                <label class="form-check-label" for="isActive">Active</label>
             </div>
         </div>
 
@@ -78,61 +84,114 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/boot@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
-    $(document).ready(function () {
-        getQueryStringValue('vendorCode');
+    //$(document).ready(function () {
+
+    //getQueryStringValue('vendorCode');
+    //});
+     function validateEmail() {
+        var email = document.getElementById("email").value
+        const emailError = document.getElementById("emailError");
+        var emailRegex = /^[a-zA-Z0-9._-]+[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         
-    });
+        if (email === "") {
+            emailError.style.display = "none";
+        }
+        else if (emailRegex.test(email)) {
+            emailError.style.display = "block";
+        } else {
+            emailError.style.display = "none";
+        }
+    }
+    function validateMobile() {
+        var contact = document.getElementById("contactNo");
+        var contactError = document.getElementById("contactError");
+        var contactRegex =/^[0-9]{10}$/;
+        if (contact.value === "") {
+            contactError.style.display = "none";
+        }
+        else if (contactRegex.test(contact.value)) {
+            contactError.style.display = "block";
+        } else {
+            contactError.style.display = "none";
+        }
+    }
+    function formValidation(){
+       var name= document.getElementById("name").value ;
+       var email= document.getElementById("email").value;
+        var contactNo=document.getElementById("contactNo").value;
+        var isActive=document.getElementById("isActive").checked;
+        var address1=document.getElementById("address1").value;
+        var address2=document.getElementById("address2").value;
+        if (
+            !isActive||
+            !address1||
+            !address2
+            ||!contactNo|| !email|| !name
+        ){
+            alert("Please fill up the required field");
+            return ;
+        }
+        if (!validateEmail()) {
+            return false;
+        }
+
+        // Check if contact number format is correct (10 digits)
+        if (!validateMobile()) {
+            alert("Enter a 10-digit valid number syntax");
+            return false;
+        }
+        return true;
+    }
     function SubmitVendorForm(){
+        if(!formValidation()){
+            return;
+        }
+            var vendorDetail = {
+                Name: $('#name').val(),
+                Email: $('#email').val(),
+                AddressLine1: $('#address1').val(),
+                ValidTill: $('#validTill').val(),
+                Contact: $('#contactNo').val(),
+                AddressLine2: $('#address2').val(),
+                isChecked: $('#isActive').prop('checked')
 
-        var vendorDetail = {
-            Name: $('#name').val(),
-            Email: $('#email').val(),
-            AddressLine1: $('#address1').val(),
-            ValidTill: $('#validTill').val(),
-            Contact: $('#contactNo').val(),
-            AddressLine2: $('#address2').val(),
-            isChecked :$('#isActive').prop('checked')
-
-        };
-        console.log("kdflsfs", vendorDetail);
-        //BaseService('Form_Master', 'SaveVendorDetail', JSON.stringify(vendorDetail), function (response) {
-        //    alert(response.message);
-        //}, function (error) {
-        //    alert(error.message);
-        //});
-        $.ajax({
-            url: '/Form_Master/SaveVendorDetail',
-            data: JSON.stringify(vendorDetail),
-            type: 'POST', // POST, GET, PUT, DELETE, etc.
-            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
-            dataType: "json", // Expected response data type (e.g., JSON)
-            success: function (response) {
-                if (response.success) {
-                    console.log( response.message);
-                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
-                } else {
-                    alert({ message: "An error occurred" })
+            };
+            console.log("kdflsfs", vendorDetail);
+            $.ajax({
+                url: '/Form_Master/SaveVendorDetail',
+                data: JSON.stringify(vendorDetail),
+                type: 'POST', // POST, GET, PUT, DELETE, etc.
+                contentType: "application/json", // Specify content type (e.g., JSON or FormData)
+                dataType: "json", // Expected response data type (e.g., JSON)
+                success: function (response) {
+                    if (response.success) {
+                        console.log(response.message);
+                        window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                    } else {
+                        alert({ message: "An error occurred" })
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    errorCallback({ message: "An error occurred" });
                 }
-            },
-            error: function (xhr, status, error) {
-                console.error("Error:", error);
-                errorCallback({ message: "An error occurred" });
-            }
-        });
+            });
+       
     }
 
     function getQueryStringValue(key) {
         var urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(key);
     }
-
     var vendorCode = getQueryStringValue('vendorCode');
-    GetVendorDataByCodeId(vendorCode);
+    if (vendorCode != null) {
+        GetVendorDataByCodeId(vendorCode);
+    }
     console.log('Vendor Code:', vendorCode);
     function GetVendorDataByCodeId(vendorCode){
         $.ajax({
             url: '/Form_Master/GetVendorDataByVendorCode',
-            data: JSON.stringify({Code:vendorCode}),
+            data: JSON.stringify({Vendor_Id:vendorCode}),
             type: 'POST',
             contentType: "application/json", 
             dataType: "json",
@@ -141,6 +200,7 @@
                     console.log("vendor res", response);
                     const item = response[0];
                     document.getElementById("name").value = item.name || "";
+                    document.getElementById("code").value = item.code || "";
                     document.getElementById("email").value = item.email || "";
                     document.getElementById("validTill").value = item.validTill
                         ? new Date(item.validTill).toISOString().split("T")[0]
@@ -162,6 +222,7 @@
         });
     }
     function updateVendorForm(){
+        
         var vendorDetail = {
             Name: $('#name').val(),
             Email: $('#email').val(),
@@ -169,15 +230,15 @@
             ValidTill: $('#validTill').val(),
             Contact: $('#contactNo').val(),
             AddressLine2: $('#address2').val(),
-            isChecked: $('#isActive').prop('checked')
-            Code: vendorCode
+            isChecked: $('#isActive').prop('checked'),
+            Vendor_Id: vendorCode
         };
         $.ajax({
             url: '/Form_Master/UpdateVendorDetail',
             data: JSON.stringify(vendorDetail),
-            type: 'POST', // POST, GET, PUT, DELETE, etc.
-            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
-            dataType: "json", // Expected response data type (e.g., JSON)
+            type: 'POST', 
+            contentType: "application/json",
+            dataType: "json", 
             success: function (response) {
                 if (response.success) {
                     console.log(response.message);

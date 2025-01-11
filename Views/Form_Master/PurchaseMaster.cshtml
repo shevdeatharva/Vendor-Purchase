@@ -2,7 +2,13 @@
 @{
     ViewData["Title"] = "PurchaseMaster";
 }
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
+<!-- jQuery (needed for Select2 to work) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <title>Purchase Entry Form</title>
 <div class="container mt-5">
     <div class="card shadow-lg">
@@ -18,17 +24,15 @@
         <div class="card-body">
             <form>
                 <div class="row g-3">
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="unit" placeholder="Unit" />
-                            <label for="unit">Unit</label>
+                     <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="orderNo" placeholder="code" readonly/>
+                        <label for="orderNo">Order No</label>
                         </div>
-                    </div>
+                        </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <select class="form-select" id="orderDate">
-                                <option value="" selected>Select orderDate</option>
-                            </select>
+                            <input type="date" class="form-control" id="orderDate" placeholder="cal" readonly />
                             <label for="orderDate">Order Date</label>
                         </div>
                     </div>
@@ -53,15 +57,15 @@
 
                     <!-- Order Value -->
                     <div class="col-12">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="orderValue" placeholder="Order Value" />
+                        <div class="form-floating col-6">
+                            <input type="text" class="form-control" id="orderValue" placeholder="Order Value" readonly/>
                             <label for="orderValue">Order Value</label>
                         </div>
                     </div>
 
                     <!-- Material, Code, Short Text, and Unit -->
                     
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-floating">
                             <select class="form-select" id="code">
                                 <option value="" selected>Select Code</option>
@@ -69,7 +73,7 @@
                             <label for="code">Code</label>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-floating">
                             <select class="form-select" id="shortText">
                                 <option value="" selected>Select ShortTxt</option>
@@ -78,31 +82,36 @@
                         </div>
                     </div>
                     
-
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="unit" placeholder="Unit" readonly />
+                            <label for="unit">Unit</label>
+                        </div>
+                    </div>
                     <!-- Quantity, Rate, Amount, Expected Date -->
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="quantity" placeholder="Quantity" />
+                            <input type="tel" class="form-control" id="quantity" placeholder="Quantity" oninput="validateQuantity();updateAmount()" />
                             <label for="quantity">Quantity</label>
+                            <small id="quantityError" style="color: red; display: none;">Please enter a valid number.</small>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="rate" placeholder="Rate" />
+                            <input type="tel" class="form-control" id="rate" placeholder="Rate" oninput="validateRate();updateAmount();"/>
                             <label for="rate">Rate</label>
+                            <small id="rateError" style="color: red; display: none;">Please enter a valid number.</small>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="amount" placeholder="Amount" />
+                            <input type="number" class="form-control" id="amount" placeholder="Amount" readonly />
                             <label for="amount">Amount</label>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="form-floating">
-                            <select class="form-select" id="expectedDate">
-                                <option value="" selected>Select expectedDate</option>
-                            </select>
+                            <input type="date" class="form-control" id="expectedDate" placeholder="expectedDate" />
                             <label for="expectedDate">Expected Date</label>
                         </div>
                     </div>
@@ -130,14 +139,6 @@
                                 </tr>
                             </thead>
                             <tbody id="purchaseTableBody">
-                                <tr>
-                                    <td><input type="checkbox" /></td>
-                                    <td>Example Code</td>
-                                    <td>10</td>
-                                    <td>100</td>
-                                    <td>1000</td>
-                                    <td>2025-01-10</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -162,17 +163,30 @@
 <script type="text/javascript">
     var purchaseDetail={};
     $(document).ready(function () {
+        CurrentDate();
         loadMaterialData();
         loadVendorData();
         getQueryStringValue('Code');
     });
+    var materialOrderData={};
+    var orderValue;
+    var amountvalue;
+    function CurrentDate(){
+        const orderDateInput = document.getElementById("orderDate");
+        const today = new Date().toISOString().split('T')[0]; 
+        console.log("Date",today);
+        orderDateInput.value = today;
+    }
     function getQueryStringValue(key) {
         var urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(key);
     }
 
     var vendorCode = getQueryStringValue('Code');
-    GetPurchaseDataByCodeId(vendorCode);
+    if(vendorCode!=null){
+        GetPurchaseDataByCodeId(vendorCode);
+    }
+    
     function loadMaterialData() {
         $.ajax({
             url: '/Home/GetMaterialData',
@@ -180,19 +194,47 @@
             dataType: 'json',
             success: function (data) {
                 console.log("Material Data", data);
-
-                
-                var dropdown = $('#shortText'); 
+                materialOrderData=data;
+                //var dropdown = $('#shortText'); 
+                //var dropdownCode = $('#code');
+                //dropdown.empty();
+                //dropdownCode.empty();
+                //dropdown.append('<option value="" selected>Select ShortTxt</option>');
+                //dropdownCode.append('<option value="" selected>Select Code</option>');
+                //// Iterate over the data and append options to the dropdown
+                //data.forEach(function (material) {
+                //    dropdown.append(new Option(material.shortTxt));
+                //    dropdownCode.append(new Option( material.code));
+                //});
                 var dropdownCode = $('#code');
-                dropdown.empty();
-                dropdownCode.empty();
-                dropdown.append('<option value="" selected>Select ShortTxt</option>');
-                dropdownCode.append('<option value="" selected>Select ShortTxt</option>');
-                // Iterate over the data and append options to the dropdown
-                data.forEach(function (material) {
-                    dropdown.append(new Option(material.shortTxt));
-                    dropdownCode.append(new Option( material.code));
-                });
+dropdownCode.empty();
+dropdownCode.append('<option value="" selected>Select Code</option>');
+var codeOptions = [...new Set(data.map(item => item.code))]; // Get unique codes
+codeOptions.forEach(function (code) {
+    dropdownCode.append(new Option(code, code));
+});
+
+// Event listener for Code selection
+dropdownCode.change(function () {
+    var selectedCode = $(this).val();
+    updateShortTextDropdown(selectedCode); // Update ShortTxt dropdown based on Code selection
+    $('#unit').val(''); // Reset Unit input field
+});
+//$('#code').select2({
+//    placeholder: "Select Code",
+//    allowClear: true
+//});
+
+//$('#shortText').select2({
+//    placeholder: "Select ShortTxt",
+//    allowClear: true
+//});
+
+$('#shortText').change(function () {
+    var selectedShortTxt = $(this).val();
+    updateUnitField(selectedShortTxt);
+});
+
             },
             error: function (xhr, status, error) {
                 console.error('Error loading material data:', error);
@@ -200,6 +242,44 @@
             }
         });
     }
+    function validateQuantity() {
+        const quantityInput = document.getElementById("quantity");
+        const quantityError = document.getElementById("quantityError");
+        if (quantityInput.value === "") {
+            quantityError.style.display = "none"; 
+        }
+        else if (!/^\d+$/.test(quantityInput.value)) {
+            quantityError.style.display = "block"; 
+        } else {
+            quantityError.style.display = "none";
+        }
+    }
+    function validateRate() {
+        const rateInput = document.getElementById("rate");
+        const rateError = document.getElementById("rateError");
+        if (rateInput.value === "") {
+            rateError.style.display = "none";
+        }
+        else if (!/^\d+$/.test(rateInput.value)) {
+            rateError.style.display = "block";
+        } else {
+            rateError.style.display = "none";
+        }
+    } 
+    function updateAmount() {
+        const quantity = document.getElementById("quantity").value;
+        const rate = document.getElementById("rate").value;
+        const amountInput = document.getElementById("amount");
+        const orderInput = document.getElementById("orderValue");
+        // Check if both quantity and rate are valid numbers
+        if (!isNaN(quantity) && !isNaN(rate) && quantity !== "" && rate !== "") {
+            amountInput.value = (parseFloat(quantity) * parseFloat(rate)).toFixed(2); // Calculate and set amount
+            orderInput.value= amountInput.value
+        } else {
+            amountInput.value = ""; // Clear the amount if inputs are invalid
+        }
+    }
+
     function loadVendorData() {
         $.ajax({
             url: '/Home/GetVendorData', // Your controller action URL
@@ -208,20 +288,11 @@
             success: function (data) {
                 console.log("Vendor Data", data);
 
-
-                var dropdownexpectedDate = $('#expectedDate');
-                var dropdownOrderDate = $('#orderDate');
                 var dropdownCodeVendor = $('#vendor');
-                dropdownexpectedDate.empty();
-                dropdownOrderDate.empty();
                 dropdownCodeVendor.empty();
-                dropdownexpectedDate.append('<option value="" selected>DD:MM:YYYY</option>');
-                dropdownOrderDate.append('<option value="" selected>DD:MM:YYYY</option>');
                 dropdownCodeVendor.append('<option value="" selected>Select Vendor</option>');
                 // Iterate over the data and append options to the dropdown
                 data.forEach(function (vendor) {
-                    dropdownexpectedDate.append(new Option(vendor.validTill));
-                    dropdownOrderDate.append(new Option(vendor.orderDate));
                     dropdownCodeVendor.append(new Option(vendor.name));
                 });
 
@@ -249,7 +320,6 @@
         };
         // Get values from the form
         var orderNo = $('#orderNo').val();
-        var orderDate = $('#orderDate').val();
         var vendor = $('#vendor').val();
         var notes = $('#notes').val();
         var orderValue = $('#orderValue').val();
@@ -262,7 +332,7 @@
         var amount = (quantity * rate).toFixed(2);
 
         // Validate required fields (you can modify this as per your requirements)
-        if (!code || !shortText || !quantity || !rate || !amount || !expectedDate) {
+        if (!code || !quantity || !rate || !amount || !expectedDate) {
             alert("Please fill in all required fields.");
             return;
         }
@@ -281,16 +351,7 @@
 
         // Append the new row to the table
         $('#purchaseTableBody').append(newRow);
-
-        // Clear the form fields after adding the data to the table (optional)
-        $('#orderNo').val('');
-        $('#orderDate').val('');
-        $('#vendor').val('');
-        $('#notes').val('');
-        $('#orderValue').val('');
         $('#code').val('');
-        $('#shortText').val('');
-        $('#unit').val('');
         $('#quantity').val('');
         $('#rate').val('');
         $('#amount').val('');
@@ -304,18 +365,19 @@
     }
 
     function SavePurchaseDetail() {
+
          purchaseDetail = {
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
             Notes: $('#notes').val(),
-            OrderValue: $('#orderValue').val(),
-            Code: $('#code').val(),
+            MCode: $('#code').val(),
             ShortTxt: $('#shortText').val(),
             Unit: $('#unit').val(),
             Quantity: $('#quantity').val(),
             Rate: $('#rate').val(),
             ExpectedDate: $('#expectedDate').val(),
-            Amount: (quantity * rate).toFixed(2),
+            Amount: $('#amount').val(),
+            OrderValue:$('#orderValue').val() ,
         };
         $.ajax({
             url: '/Form_Master/SavePurchaseDetail',
@@ -339,8 +401,8 @@
     }
     function GetPurchaseDataByCodeId(vendorCode) {
         $.ajax({
-            url: '/Form_Master/sp_get_vp_Purchase_Master_Detail_ByCode',
-            data: JSON.stringify({ Code: vendorCode }),
+            url: '/Form_Master/GetPurchaseDataByVendorCode',
+            data: JSON.stringify({ OrderNo: vendorCode }),
             type: 'POST',
             contentType: "application/json",
             dataType: "json",
@@ -348,20 +410,21 @@
                 if (response) {
                     console.log("vendor res", response);
                     const item = response[0];
-                    document.getElementById("orderDate").value = item.OrderDate || "";
-                    document.getElementById("vendor").value = item.Vendor || "";
-                    document.getElementById("notes").value = item.Notes
+                    document.getElementById("orderNo").value = item.pCode || "";
+                    document.getElementById("orderDate").value = item.orderDate || "";
+                    document.getElementById("vendor").value = item.vendor || "";
+                    document.getElementById("notes").value = item.notes
                         || ""; // Format date to yyyy-MM-dd for input[type="date"]
-                    document.getElementById("orderValue").value = item.OrderValue || "";
-                    document.getElementById("code").value = item.Code || "";
-                    document.getElementById("shortText").value = item.ShortText || "";
-                    document.getElementById("unit").value = item.Unit || "";
-                    document.getElementById("quantity").value = item.Quantity || "";
-                    document.getElementById("rate").value = item.Rate || "";
-                    document.getElementById("expectedDate").value = item.ExpectedDate || "";
-                    document.getElementById("amount").value = item.Amount || "";
+                    document.getElementById("orderValue").value = item.orderValue || "";
+                    document.getElementById("code").value = item.mCode || "";
+                    document.getElementById("shortText").value = item.shortTxt || "";
+                    document.getElementById("unit").value = item.unit || "";
+                    document.getElementById("quantity").value = item.quantity || "";
+                    document.getElementById("rate").value = item.rate || "";
+                    document.getElementById("expectedDate").value = item.expected_Date || "";
+                    document.getElementById("amount").value = item.amount || "";
                     
-                    document.getElementById("saveButton").style.display = "none";
+                    document.getElementById("submitButton").style.display = "none";
                     document.getElementById("updateButton").style.display = "inline-block";
                 } else {
                     alert({ message: "An error occurred" })
@@ -373,19 +436,20 @@
             }
         });
     }
-    function updateVendorForm() {
+    function updatePurchaseForm() {
        var purchasesDetail = {
+           OrderNo:vendorCode,
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
             Notes: $('#notes').val(),
             OrderValue: $('#orderValue').val(),
-            Code: $('#code').val(),
+            MCode: $('#code').val(),
             ShortTxt: $('#shortText').val(),
             Unit: $('#unit').val(),
             Quantity: $('#quantity').val(),
             Rate: $('#rate').val(),
-            ExpectedDate: $('#expectedDate').val(),
-            Amount: (quantity * rate).toFixed(2),
+            Expected_Date: $('#expectedDate').val(),
+            Amount: $('#amount').val(),
         };
         $.ajax({
             url: '/Form_Master/UpdatePurchaseDetail',
@@ -396,7 +460,7 @@
             success: function (response) {
                 if (response.success) {
                     console.log(response.message);
-                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                    window.location.href = '@Url.Action("POEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
                 }
@@ -407,4 +471,30 @@
             }
         });
     }
+    function updateShortTextDropdown(code) {
+    var dropdownShortText = $('#shortText');
+    dropdownShortText.empty();
+    dropdownShortText.append('<option value="" selected>Select ShortTxt</option>');
+    
+    // Filter data based on the selected Code
+    var filteredShortTexts = materialOrderData.filter(function (item) {
+        return item.code === code;
+    });
+
+    // Populate the ShortTxt dropdown with filtered values
+    filteredShortTexts.forEach(function (item) {
+        dropdownShortText.append(new Option(item.shortTxt, item.shortTxt));
+    });
+}
+function updateUnitField(shortTxt) {
+    var selectedItem = materialOrderData.find(function (item) {
+        return item.shortTxt === shortTxt;
+    });
+
+    if (selectedItem) {
+        $('#unit').val(selectedItem.unit); // Set the Unit value in the input field
+    } else {
+        $('#unit').val(''); // Reset Unit if no valid ShortTxt is selected
+    }
+}
     </script>

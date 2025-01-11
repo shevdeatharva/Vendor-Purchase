@@ -36,7 +36,7 @@ namespace VendorPurchaseProject.Controllers
         public async Task<List<VendorModel>> GetVendorDataByVendorCode([FromBody] VendorModel vendorDetail)
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@Code", vendorDetail.Code);
+            parameters.Add("@Vendor_Id", vendorDetail.Vendor_Id);
             var vendorData = await _dbService.GetAll<VendorModel>("sp_get_vp_Vendor__Master_Detail_ByCode", parameters);
             return vendorData;
         }
@@ -71,7 +71,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Code", vendorDetail.Code);
+                parameters.Add("@Vendor_Id", vendorDetail.Vendor_Id);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 await _dbService.EditData("sp_del_vp_Vendor_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
@@ -90,7 +90,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Code", vendorDetail.Code);
+                parameters.Add("@Vendor_Id", vendorDetail.Vendor_Id);
                 parameters.Add("@Name", vendorDetail.Name);
                 parameters.Add("@Email", vendorDetail.Email);
                 parameters.Add("@AddressLine1", vendorDetail.AddressLine1);
@@ -111,10 +111,10 @@ namespace VendorPurchaseProject.Controllers
             }
         }
         [HttpPost]
-        public async Task<List<MaterialModel>> GetMaterialDataByVendorCode([FromBody] MaterialModel vendorDetail)
+        public async Task<List<MaterialModel>> GetMaterialDataByVendorCode([FromBody] MaterialModel materialDetail)
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@Code", vendorDetail.Code);
+            parameters.Add("@Material_Id", materialDetail.Material_Id);
             var vendorData = await _dbService.GetAll<MaterialModel>("sp_get_vp_Material__Master_Detail_ByCode", parameters);
             return vendorData;
         }
@@ -148,7 +148,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Code", materialDetail.Code);
+                parameters.Add("@Material_Id", materialDetail.Material_Id);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 await _dbService.EditData("sp_del_vp_Material_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
@@ -167,7 +167,7 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Code", materialDetail.Code);
+                parameters.Add("@Material_Id", materialDetail.Material_Id);
                 parameters.Add("@ShortTxt", materialDetail.ShortTxt);
                 parameters.Add("@LongTxt", materialDetail.LongTxt);
                 parameters.Add("@ReorderLevel", materialDetail.ReOrderLevel);
@@ -206,11 +206,11 @@ namespace VendorPurchaseProject.Controllers
                 parameters.Add("@Quantity", purchaseDetail.Quantity);
                 parameters.Add("@Amount", purchaseDetail.Amount);
                 parameters.Add("@Rate", purchaseDetail.Rate);
-                parameters.Add("@Name", purchaseDetail.Name);
-                parameters.Add("@ValidTill", purchaseDetail.ValidTill);
+                parameters.Add("@Name", purchaseDetail.Vendor);
+                parameters.Add("@ValidTill", purchaseDetail.Expected_Date);
                 parameters.Add("@Notes", purchaseDetail.Notes);
                 parameters.Add("@Unit", purchaseDetail.Unit);
-                parameters.Add("@Code", purchaseDetail.Code);
+                parameters.Add("@MCode", purchaseDetail.MCode);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 await _dbService.EditData("sp_ins_vp_Purchase_Master", parameters);
                 var res = parameters.Get<int>("@NewId");
@@ -250,15 +250,15 @@ namespace VendorPurchaseProject.Controllers
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@OrderNo", purchaseDetail.OrderNo);
-                parameters.Add("@Code", purchaseDetail.Code);
+                parameters.Add("@MCode", purchaseDetail.MCode);
                 parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
                 parameters.Add("@OrderDate", purchaseDetail.OrderDate);
                 parameters.Add("@OrderValue", purchaseDetail.OrderValue);
                 parameters.Add("@Quantity", purchaseDetail.Quantity);
                 parameters.Add("@Amount", purchaseDetail.Amount);
                 parameters.Add("@Rate", purchaseDetail.Rate);
-                parameters.Add("@Name", purchaseDetail.Name);
-                parameters.Add("@ValidTill", purchaseDetail.ValidTill);
+                parameters.Add("@Vendor", purchaseDetail.Vendor);
+                parameters.Add("@ExpectedDate", purchaseDetail.Expected_Date);
                 parameters.Add("@Notes", purchaseDetail.Notes);
                 parameters.Add("@Unit", purchaseDetail.Unit);
                 parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);

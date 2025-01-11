@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Plugins;
 using System.Diagnostics;
 using VendorPurchaseProject.DBHandler;
 using VendorPurchaseProject.Models;
@@ -40,8 +41,16 @@ namespace VendorPurchaseProject.Controllers
         }
         public async Task<List<VendorModel>> GetVendorData()
         {
-            var vendorData = await _dbService.GetAll<VendorModel>("sp_get_vp_Vendor_Master", new { });
-            return vendorData;
+            try
+            {
+                var vendorData = await _dbService.GetAll<VendorModel>("sp_get_vp_Vendor_Master", new { });
+                return vendorData;
+            }
+            catch (Exception ex)
+            {
+                return new List<VendorModel> {};
+            }
+           
         }
         public async Task<List<MaterialModel>> GetMaterialData()
         {

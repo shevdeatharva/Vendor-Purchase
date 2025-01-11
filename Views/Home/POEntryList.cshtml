@@ -14,38 +14,21 @@
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
-                <th>Code</th>
-                <th>Short Text</th>
-                <th>Quantity</th>
-                <th>Vendor</th>
-                <th>Rate</th>
-                <th>Amount</th>
-                <th>Order Date</th>
-                <th>Unit</th>
-                <th>Exp Date</th>
+                <th colspan="1">PCode</th>
+                <th colspan="1">MCode</th>
+                <th colspan="1">Short Text</th>
+                <th colspan="1">Vendor</th>
+                <th colspan="1">Quantity</th>
+                <th colspan="1">Rate</th>
+                <th colspan="1">Amount</th>
+                <th colspan="1">OrderValue</th>
+                <th colspan="1">OrderDate</th>
+                <th colspan="1">Unit</th>
+                <th colspan="1">Exp Date</th>
                 <th colspan="2" class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody id="purchaseTableBody">
-            <!-- Sample row -->
-            <tr>
-                <td>001</td>
-                <td>Vendor 1</td>
-                <td>vendor1@example.com</td>
-                <td>1234567890</td>
-                <td>2025-12-31</td>
-                <td>2</td>
-                <td>2025-12-31</td>
-                <td>2</td>
-                <td>2025-12-31</td>
-                <td>
-                    <button class="btn btn-sm btn-success">Edit</button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-danger">Delete</button>
-                </td>
-            </tr>
-            <!-- Add more rows as needed -->
         </tbody>
     </table>
 </div>
@@ -65,23 +48,22 @@
                 data.forEach(function (purchase) {
                     vendorHtml += `
                     <tr>
-                                <td>${purchase.OrderNo}</td>
-                                    <td>${purchase.code}</td>
+                                <td>${purchase.pCode}</td>
+                                    <td>${purchase.mCode}</td>
                                     <td>${purchase.shortTxt}</td>
-                                        <td>${purchase.Name}</td>
-                                    <td>${purchase.ValidTill}</td>
-                                    <td>${purchase.OrderDate}</td>
-                                        <td>${purchase.OrderValue}</td>
-                                             <td>${purchase.Notes}</td>
-                                              <td>${purchase.Quantity}</td>
-                                               <td>${purchase.Rate}</td>
-                                                    <td>${purchase.Amount}</td>
-                                    <td>${purchase.Unit ? 'Yes' : 'No'}</td>
+                                        <td>${purchase.vendor}</td>
+                                              <td>${purchase.quantity}</td>
+                                               <td>${purchase.rate}</td>
+                                                    <td>${purchase.amount}</td>
+                                        <td>${purchase.orderValue}</td>
+                                    <td>${purchase.orderDate}</td>
+                                    <td>${purchase.unit}</td>
+                                    <td>${purchase.expected_Date}</td>
                         <td>
-                                            <button class="btn btn-sm btn-success" onclick="editPurchase(${purchase.OrderNo})">Edit</button>
+                                            <button class="btn btn-sm btn-success" onclick="editPurchase(${purchase.orderNo})">Edit</button>
                         </td>
                         <td>
-                                                        <button class="btn btn-sm btn-danger" onclick="deletePurchase(${purchase.OrderNo},${purchase.isActive})">Delete</button>
+                                                        <button class="btn btn-sm btn-danger" onclick="deletePurchase(${purchase.orderNo})">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -102,7 +84,7 @@
     function deletePurchase(code, isActive) {
             $.ajax({
                 url: '/Form_Master/DeletePurchaseDetail',
-                data: JSON.stringify({ Code: code }),
+                data: JSON.stringify({ OrderNo: code }),
                 type: 'POST',
                 contentType: "application/json",
                 dataType: "json",

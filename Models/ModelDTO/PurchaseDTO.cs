@@ -2,10 +2,10 @@
 {
     public class PurchaseDTO
     {
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string MCode { get; set; }
+        public string Vendor { get; set; }
         public string ShortTxt { get; set; }
-        public string ValidTill { get; set; }
+        public string Expected_Date { get; set; }
         public string OrderDate { get; set; }
         public string OrderValue { get; set; }
         public string Notes { get; set; }

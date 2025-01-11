@@ -53,10 +53,10 @@
                             <td>${material.unit}</td>
                         <td>${material.isActive ? 'Yes' : 'No'}</td>
                     <td>
-                                <button class="btn btn-sm btn-success" onclick="editMaterial(${material.code})">Edit</button>
+                                <button class="btn btn-sm btn-success" onclick="editMaterial(${material.material_Id})">Edit</button>
                     </td>
                     <td>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${material.code},${material.isActive})">Delete</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${material.material_Id},${material.isActive})">Delete</button>
                     </td>
                 </tr>
             `;
@@ -78,7 +78,7 @@
         if (isActive == false) {
             $.ajax({
                 url: '/Form_Master/DeleteMaterialDetail',
-                data: JSON.stringify({ Code: code }),
+                data: JSON.stringify({ Material_Id: code }),
                 type: 'POST',
                 contentType: "application/json",
                 dataType: "json",
