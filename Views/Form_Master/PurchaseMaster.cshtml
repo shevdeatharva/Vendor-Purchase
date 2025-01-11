@@ -2,13 +2,6 @@
 @{
     ViewData["Title"] = "PurchaseMaster";
 }
-<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
-
-<!-- jQuery (needed for Select2 to work) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <title>Purchase Entry Form</title>
 <div class="container mt-5">
     <div class="card shadow-lg">
@@ -68,7 +61,7 @@
                     <div class="col-md-4">
                         <div class="form-floating">
                             <select class="form-select" id="code">
-                                <option value="" selected>Select Code</option>
+                                <option value="">Select Code</option>
                             </select>
                             <label for="code">Code</label>
                         </div>
@@ -76,7 +69,7 @@
                     <div class="col-md-4">
                         <div class="form-floating">
                             <select class="form-select" id="shortText">
-                                <option value="" selected>Select ShortTxt</option>
+                                <option value="" >Select ShortTxt</option>
                             </select>
                             <label for="shortText">Short Text</label>
                         </div>
@@ -187,61 +180,7 @@
         GetPurchaseDataByCodeId(vendorCode);
     }
     
-    function loadMaterialData() {
-        $.ajax({
-            url: '/Home/GetMaterialData',
-            type: 'GET',
-            dataType: 'json',
-            success: function (data) {
-                console.log("Material Data", data);
-                materialOrderData=data;
-                //var dropdown = $('#shortText'); 
-                //var dropdownCode = $('#code');
-                //dropdown.empty();
-                //dropdownCode.empty();
-                //dropdown.append('<option value="" selected>Select ShortTxt</option>');
-                //dropdownCode.append('<option value="" selected>Select Code</option>');
-                //// Iterate over the data and append options to the dropdown
-                //data.forEach(function (material) {
-                //    dropdown.append(new Option(material.shortTxt));
-                //    dropdownCode.append(new Option( material.code));
-                //});
-                var dropdownCode = $('#code');
-dropdownCode.empty();
-dropdownCode.append('<option value="" selected>Select Code</option>');
-var codeOptions = [...new Set(data.map(item => item.code))]; // Get unique codes
-codeOptions.forEach(function (code) {
-    dropdownCode.append(new Option(code, code));
-});
-
-// Event listener for Code selection
-dropdownCode.change(function () {
-    var selectedCode = $(this).val();
-    updateShortTextDropdown(selectedCode); // Update ShortTxt dropdown based on Code selection
-    $('#unit').val(''); // Reset Unit input field
-});
-//$('#code').select2({
-//    placeholder: "Select Code",
-//    allowClear: true
-//});
-
-//$('#shortText').select2({
-//    placeholder: "Select ShortTxt",
-//    allowClear: true
-//});
-
-$('#shortText').change(function () {
-    var selectedShortTxt = $(this).val();
-    updateUnitField(selectedShortTxt);
-});
-
-            },
-            error: function (xhr, status, error) {
-                console.error('Error loading material data:', error);
-                $('#vendorData').html('<p>Error loading material data.</p>');
-            }
-        });
-    }
+   
     function validateQuantity() {
         const quantityInput = document.getElementById("quantity");
         const quantityError = document.getElementById("quantityError");
@@ -318,25 +257,7 @@ $('#shortText').change(function () {
             ExpectedDate: $('#expectedDate').val(),
             Amount: (quantity * rate).toFixed(2),
         };
-        // Get values from the form
-        var orderNo = $('#orderNo').val();
-        var vendor = $('#vendor').val();
-        var notes = $('#notes').val();
-        var orderValue = $('#orderValue').val();
-        var code = $('#code').val();
-        var shortText = $('#shortText').val();
-        var unit = $('#unit').val();
-        var quantity = $('#quantity').val();
-        var rate = $('#rate').val();
-        var expectedDate = $('#expectedDate').val();
-        var amount = (quantity * rate).toFixed(2);
-
-        // Validate required fields (you can modify this as per your requirements)
-        if (!code || !quantity || !rate || !amount || !expectedDate) {
-            alert("Please fill in all required fields.");
-            return;
-        }
-
+        
         // Create new row with the collected data
         var newRow = `
             <tr>
@@ -365,7 +286,9 @@ $('#shortText').change(function () {
     }
 
     function SavePurchaseDetail() {
-
+        if(formValidation()){
+            return;
+        }
          purchaseDetail = {
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
@@ -409,10 +332,11 @@ $('#shortText').change(function () {
             success: function (response) {
                 if (response) {
                     console.log("vendor res", response);
-                    const item = response[0];
+                    var item = response[0];
                     document.getElementById("orderNo").value = item.pCode || "";
                     document.getElementById("orderDate").value = item.orderDate || "";
-                    document.getElementById("vendor").value = item.vendor || "";
+                    document.getElementById("vendor").value = item.vendor|| "";
+                    console.log("vendor",item.vendor)
                     document.getElementById("notes").value = item.notes
                         || ""; // Format date to yyyy-MM-dd for input[type="date"]
                     document.getElementById("orderValue").value = item.orderValue || "";
@@ -437,6 +361,9 @@ $('#shortText').change(function () {
         });
     }
     function updatePurchaseForm() {
+        if(formValidation()){
+            return;
+        }
        var purchasesDetail = {
            OrderNo:vendorCode,
             OrderDate: $('#orderDate').val(),
@@ -472,29 +399,87 @@ $('#shortText').change(function () {
         });
     }
     function updateShortTextDropdown(code) {
-    var dropdownShortText = $('#shortText');
-    dropdownShortText.empty();
-    dropdownShortText.append('<option value="" selected>Select ShortTxt</option>');
-    
-    // Filter data based on the selected Code
-    var filteredShortTexts = materialOrderData.filter(function (item) {
-        return item.code === code;
-    });
+        var dropdownShortText = $('#shortText');
+        dropdownShortText.empty();
+        dropdownShortText.append('<option value="" selected>Select ShortTxt</option>');
 
-    // Populate the ShortTxt dropdown with filtered values
-    filteredShortTexts.forEach(function (item) {
-        dropdownShortText.append(new Option(item.shortTxt, item.shortTxt));
-    });
-}
-function updateUnitField(shortTxt) {
-    var selectedItem = materialOrderData.find(function (item) {
-        return item.shortTxt === shortTxt;
-    });
+        // Filter data based on the selected Code
+        var filteredShortTexts = materialOrderData.filter(function (item) {
+            return item.code === code;
+        });
 
-    if (selectedItem) {
-        $('#unit').val(selectedItem.unit); // Set the Unit value in the input field
-    } else {
-        $('#unit').val(''); // Reset Unit if no valid ShortTxt is selected
+        // Populate the ShortTxt dropdown with filtered values
+        filteredShortTexts.forEach(function (item) {
+            dropdownShortText.append(new Option(item.shortTxt, item.shortTxt));
+        });
     }
-}
-    </script>
+    function updateUnitField(shortTxt) {
+        var selectedItem = materialOrderData.find(function (item) {
+            return item.shortTxt === shortTxt;
+        });
+
+        if (selectedItem) {
+            $('#unit').val(selectedItem.unit); // Set the Unit value in the input field
+        } else {
+            $('#unit').val(''); // Reset Unit if no valid ShortTxt is selected
+        }
+    }
+    function loadMaterialData() {
+        $.ajax({
+            url: '/Home/GetMaterialData',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log("Material Data", data);
+                materialOrderData = data;
+                var dropdownCode = $('#code');
+                dropdownCode.empty();
+                dropdownCode.append('<option value="" selected>Select Code</option>');
+                var codeOptions = [...new Set(data.map(item => item.code))]; // Get unique codes
+                codeOptions.forEach(function (code) {
+                    dropdownCode.append(new Option(code, code));
+                });
+
+                
+                dropdownCode.change(function () {
+                    var selectedCode = $(this).val();
+                    updateShortTextDropdown(selectedCode);
+                    $('#unit').val('');
+                });
+                $('#shortText').change(function () {
+                    var selectedShortTxt = $(this).val();
+                    updateUnitField(selectedShortTxt);
+                });
+
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading material data:', error);
+                $('#vendorData').html('<p>Error loading material data.</p>');
+            }
+        });
+    }
+    function formValidation(){
+        // Get values from the form
+        var orderNo = $('#orderNo').val();
+        var vendor = $('#vendor').val();
+        var notes = $('#notes').val();
+        var orderValue = $('#orderValue').val();
+        var code = $('#code').val();
+        var shortText = $('#shortText').val();
+        var unit = $('#unit').val();
+        var quantity = $('#quantity').val();
+        var rate = $('#rate').val();
+        var expectedDate = $('#expectedDate').val();
+        var amount = $('#amount').val();
+
+        // Validate required fields (you can modify this as per your requirements)
+        if (!code || !quantity || !rate || !amount || !expectedDate || !vendor ||!orderValue || !notes ) {
+            alert("Please fill in all required fields.");
+            return false;
+        }else{
+
+        return true;
+        }
+
+    }
+</script>

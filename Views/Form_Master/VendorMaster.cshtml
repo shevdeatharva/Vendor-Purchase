@@ -8,6 +8,10 @@
         .form-floating label {
             padding: 0.65rem 0.75rem; /* Adjust padding for smaller inputs */
         }
+
+    .is-invalid {
+        border-color: red !important;
+    }
     </style>
     <div class="container mt-4">
     <div class="card shadow-lg">
@@ -91,12 +95,11 @@
      function validateEmail() {
         var email = document.getElementById("email").value
         const emailError = document.getElementById("emailError");
-        var emailRegex = /^[a-zA-Z0-9._-]+[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        
+        var emailRegex = /^([\w-\.]+\u0040([\w-]+\.)+[\w-]{2,4})?$/;
         if (email === "") {
             emailError.style.display = "none";
         }
-        else if (emailRegex.test(email)) {
+        else if (!emailRegex.test(email)) {
             emailError.style.display = "block";
         } else {
             emailError.style.display = "none";
@@ -105,42 +108,45 @@
     function validateMobile() {
         var contact = document.getElementById("contactNo");
         var contactError = document.getElementById("contactError");
-        var contactRegex =/^[0-9]{10}$/;
+        var contactRegex = /^[0-9]{10}$/;
+
         if (contact.value === "") {
             contactError.style.display = "none";
         }
-        else if (contactRegex.test(contact.value)) {
+        else if (!contactRegex.test(contact.value)) {
             contactError.style.display = "block";
         } else {
             contactError.style.display = "none";
         }
     }
-    function formValidation(){
-       var name= document.getElementById("name").value ;
-       var email= document.getElementById("email").value;
-        var contactNo=document.getElementById("contactNo").value;
-        var isActive=document.getElementById("isActive").checked;
-        var address1=document.getElementById("address1").value;
-        var address2=document.getElementById("address2").value;
-        if (
-            !isActive||
-            !address1||
-            !address2
-            ||!contactNo|| !email|| !name
-        ){
-            alert("Please fill up the required field");
-            return ;
-        }
-        if (!validateEmail()) {
-            return false;
+    function formValidation() {
+        const inputs = document.querySelectorAll('.form-control');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (input.id === 'code') {
+                return;
+            }
+
+            // Check if the field is empty
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid'); // Add the red border
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid'); // Remove the red border
+            }
+        });
+        if(!validateMobile()){
+            return;
         }
 
-        // Check if contact number format is correct (10 digits)
-        if (!validateMobile()) {
-            alert("Enter a 10-digit valid number syntax");
+        if (isValid) {
+            alert('Form is valid!');
+            return true;
+        } else {
+            alert('Please fill out all required fields.');
             return false;
         }
-        return true;
     }
     function SubmitVendorForm(){
         if(!formValidation()){
@@ -222,7 +228,9 @@
         });
     }
     function updateVendorForm(){
-        
+        if (!formValidation()) {
+            return;
+        }
         var vendorDetail = {
             Name: $('#name').val(),
             Email: $('#email').val(),

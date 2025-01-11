@@ -2,7 +2,11 @@
 @{
     ViewData["Title"] = "MaterialMaster";
 }
-
+<style>
+    .is-invalid {
+        border-color: red !important;
+    }
+</style>
     <div class="container mt-5">
         <div class="card shadow-lg">
             <div class="card-header bg-primary text-white">
@@ -27,8 +31,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="tel" class="form-control" id="reorderLevel" placeholder="Enter Reorder Level">
+                            <input type="tel" class="form-control" id="reorderLevel" placeholder="Enter Reorder Level" oninput="validateMinOrderLevel()">
                                 <label for="reorderLevel">Reorder Level</label>
+                            <small id="minError" style="color: red; display: none;">Please enter a number.</small>
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -55,14 +60,16 @@
                         
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="tel" class="form-control" id="minOrderQty" placeholder="Enter Min Order Quantity">
+                            <input type="tel" class="form-control" id="minOrderQty" placeholder="Enter Min Order Quantity" oninput="validateminOrderQty()">
                                 <label for="minOrderQty">Min Order Quantity</label>
+                            <small id="rateError" style="color: red; display: none;">Please enter a number.</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="text" class="form-control" id="unit" placeholder="Enter Unit">
+                                <input type="text" class="form-control" id="unit" placeholder="Enter Unit" oninput="validateUnit()">
                                 <label for="unit">Unit</label>
+                            <small id="unitError" style="color: red; display: none;">Please enter a number.</small>
                             </div>
                         </div>
                         <div class="col-md-6 mt-3">
@@ -87,22 +94,30 @@
         return urlParams.get(key);
     }
      function formValidation(){
-       var name= document.getElementById("shortText").value ;
-       var email= document.getElementById("reorderLevel").value;
-        var contactNo=document.getElementById("longText").value;
-        var isActive=document.getElementById("minOrderQty").value;
-        var address1=document.getElementById("unit").value;
-        var address2=document.getElementById("isActive").checked;
-        if (
-            !isActive||
-            !address1||
-            !address2
-            ||!contactNo|| !email|| !name
-        ){
-            alert("Please fill up the required field");
+        const inputs = document.querySelectorAll('.form-control');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (input.id === 'code') {
+                return;
+            }
+
+            // Check if the field is empty
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid'); // Add the red border
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid'); // Remove the red border
+            }
+        });
+
+        if (isValid) {
+            alert('Form is valid!');
+           return true;
+        } else {
+            alert('Please fill out all required fields.');
             return false;
         }
-        return true;
         }
 
     var vendorCode = getQueryStringValue('Code');
@@ -110,8 +125,8 @@
 
     GetVendorDataByCodeId(vendorCode);
     }
-        function SubmitmaterialForm(){
-            if(!formValidation()){
+    function SubmitmaterialForm() {
+        if (!formValidation()) {
             return;
         }
 
@@ -126,12 +141,12 @@
         $.ajax({
             url: '/Form_Master/SaveMaterialDetail',
             data: JSON.stringify(materialDetail),
-            type: 'POST', 
+            type: 'POST',
             contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 if (response.success) {
-                    console.log( response.message);
+                    console.log(response.message);
                     window.location.href = '@Url.Action("MaterialEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
@@ -143,12 +158,12 @@
             }
         });
     }
-      function GetVendorDataByCodeId(vendorCode){
+    function GetVendorDataByCodeId(vendorCode) {
         $.ajax({
             url: '/Form_Master/GetMaterialDataByVendorCode',
-            data: JSON.stringify({Material_Id:vendorCode}),
+            data: JSON.stringify({ Material_Id: vendorCode }),
             type: 'POST',
-            contentType: "application/json", 
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 if (response) {
@@ -174,8 +189,8 @@
             }
         });
     }
-    function updateMaterialForm(){
-        if(!formValidation()){
+    function updateMaterialForm() {
+        if (!formValidation()) {
             return;
         }
         var materialDetails = {
@@ -191,8 +206,8 @@
             url: '/Form_Master/UpdateMaterialDetail',
             data: JSON.stringify(materialDetails),
             type: 'POST',
-            contentType: "application/json", 
-            dataType: "json", 
+            contentType: "application/json",
+            dataType: "json",
             success: function (response) {
                 if (response.success) {
                     console.log(response.message);
@@ -207,5 +222,40 @@
             }
         });
     }
-   
+    function validateminOrderQty() {
+        const Input = document.getElementById("minOrderQty");
+        const Error = document.getElementById("rateError");
+        if (Input.value === "") {
+            Error.style.display = "none";
+        }
+        else if (!/^\d+$/.test(Input.value)) {
+            Error.style.display = "block";
+        } else {
+            Error.style.display = "none";
+        }
+    }
+     function validateUnit() {
+        const Input = document.getElementById("unit");
+        const Error = document.getElementById("unitError");
+        if (Input.value === "") {
+            Error.style.display = "none";
+        }
+        else if (!/^\d+$/.test(Input.value)) {
+            Error.style.display = "block";
+        } else {
+            Error.style.display = "none";
+        }
+    }
+    function validateMinOrderLevel() {
+        const Input = document.getElementById("reorderLevel");
+        const Error = document.getElementById("minError");
+        if (Input.value === "") {
+            Error.style.display = "none";
+        }
+        else if (!/^\d+$/.test(Input.value)) {
+            Error.style.display = "block";
+        } else {
+            Error.style.display = "none";
+        }
+    }
         </script>
