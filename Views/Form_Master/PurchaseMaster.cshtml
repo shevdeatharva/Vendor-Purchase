@@ -113,7 +113,7 @@
                     <div class="col-12">
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-primary" onclick="AddPurchaseToTable()">Add Line</button>
-                            <button type="button" class="btn btn-secondary">Update Line</button>
+                            <button type="button" class="btn btn-secondary" onclick="bindRowToFields()">Update Line</button>
                             <button type="button" class="btn btn-danger" onclick="removeSelectedLines()">Remove Line</button>
                         </div>
                     </div>
@@ -160,6 +160,9 @@
         loadMaterialData();
         loadVendorData();
         getQueryStringValue('Code');
+        if (vendorCode != null) {
+            GetPurchaseDataByCodeId(vendorCode);
+        }
     });
     var materialOrderData={};
     var orderValue;
@@ -175,13 +178,7 @@
         var urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(key);
     }
-
     var vendorCode = getQueryStringValue('Code');
-    if(vendorCode!=null){
-        GetPurchaseDataByCodeId(vendorCode);
-    }
-    
-   
     function validateQuantity() {
         const quantityInput = document.getElementById("quantity");
         const quantityError = document.getElementById("quantityError");
@@ -211,12 +208,12 @@
         const rate = document.getElementById("rate").value;
         const amountInput = document.getElementById("amount");
         const orderInput = document.getElementById("orderValue");
-        // Check if both quantity and rate are valid numbers
+        
         if (!isNaN(quantity) && !isNaN(rate) && quantity !== "" && rate !== "") {
-            amountInput.value = (parseFloat(quantity) * parseFloat(rate)).toFixed(2); // Calculate and set amount
+            amountInput.value = (parseFloat(quantity) * parseFloat(rate)).toFixed(2); 
             orderInput.value= amountInput.value
         } else {
-            amountInput.value = ""; // Clear the amount if inputs are invalid
+            amountInput.value = "";
         }
     }
 
@@ -291,9 +288,8 @@
         $('#expectedDate').val('');
     }
     function removeSelectedLines() {
-        // Find all checked checkboxes and remove the corresponding rows
-        $('#purchaseTableBody').find('input.row-checkbox:checked').each(function () {
-            $(this).closest('tr').remove();
+        $('#purchaseTableBody input[type="checkbox"]:checked').each(function () {
+            $(this).closest('tr').remove(); // Remove the row containing the checkbox
         });
     }
 
@@ -415,12 +411,9 @@
         dropdownShortText.empty();
         dropdownShortText.append('<option value="" selected>Select ShortTxt</option>');
 
-        // Filter data based on the selected Code
         var filteredShortTexts = materialOrderData.filter(function (item) {
             return item.code === code;
         });
-
-        // Populate the ShortTxt dropdown with filtered values
         filteredShortTexts.forEach(function (item) {
             dropdownShortText.append(new Option(item.shortTxt, item.shortTxt));
         });
@@ -503,4 +496,31 @@
         }
 
     }
+    function bindRowToFields() {
+        var selectedRow = $('#purchaseTableBody input[type="checkbox"]:checked').closest('tr');
+
+        if (selectedRow.length === 0) {
+            alert('Please select a row to update.');
+            return;
+        }
+
+        // Get the values from the selected row
+        var code = selectedRow.find('td:nth-child(2)').text();
+        var quantity = selectedRow.find('td:nth-child(3)').text();
+        var rate = selectedRow.find('td:nth-child(4)').text();
+        var amount = selectedRow.find('td:nth-child(5)').text();
+        var expDate = selectedRow.find('td:nth-child(6)').text();
+        totalAmount -= parseFloat(amount) || 0;
+        // Bind the values to the input fields
+        $('#orderValue').val(totalAmount);
+        $('#code').val(code);
+        $('#quantity').val(quantity);
+        $('#rate').val(rate);
+        $('#amount').val(amount);
+        $('#expectedDate').val(expDate);
+         $('#purchaseTableBody input[type="checkbox"]:checked').each(function () {
+            $(this).closest('tr').remove(); // Remove the row containing the checkbox
+        });
+    }
+
 </script>
