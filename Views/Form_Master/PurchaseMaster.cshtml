@@ -164,7 +164,7 @@
     var materialOrderData={};
     var orderValue;
     var amountvalue;
-    var totalAmount;
+    var totalAmount=0;
     function CurrentDate(){
         const orderDateInput = document.getElementById("orderDate");
         const today = new Date().toISOString().split('T')[0]; 
@@ -258,17 +258,18 @@
             ExpectedDate: $('#expectedDate').val(),
             Amount: $('#amount').val(),
         };
-        totalAmount += amount;
+        console.log("",totalAmount);
         var code= $('#code').val();
         var quantity = $('#quantity').val();
         var expectedDate= $('#expectedDate').val();
         var amount = $('#amount').val();
         var rate = $('#rate').val();
+        totalAmount += parseFloat(amount) || 0;
         if (!code || !quantity || !rate || !amount || !expectedDate ) {
             alert("Please fill in all required fields.");
             return false;
         }
-        const orderInput = document.getElementById("orderValue");
+        $('#orderValue').val(totalAmount);
         // Create new row with the collected data
         var newRow = `
             <tr>
@@ -283,7 +284,6 @@
 
         // Append the new row to the table
         $('#purchaseTableBody').append(newRow);
-        orderInput.value=totalAmount;
         $('#code').val('');
         $('#quantity').val('');
         $('#rate').val('');
