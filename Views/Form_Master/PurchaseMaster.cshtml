@@ -164,6 +164,7 @@
     var materialOrderData={};
     var orderValue;
     var amountvalue;
+    var totalAmount;
     function CurrentDate(){
         const orderDateInput = document.getElementById("orderDate");
         const today = new Date().toISOString().split('T')[0]; 
@@ -255,9 +256,19 @@
             Quantity: $('#quantity').val(),
             Rate: $('#rate').val(),
             ExpectedDate: $('#expectedDate').val(),
-            Amount: (quantity * rate).toFixed(2),
+            Amount: $('#amount').val(),
         };
-        
+        totalAmount += amount;
+        var code= $('#code').val();
+        var quantity = $('#quantity').val();
+        var expectedDate= $('#expectedDate').val();
+        var amount = $('#amount').val();
+        var rate = $('#rate').val();
+        if (!code || !quantity || !rate || !amount || !expectedDate ) {
+            alert("Please fill in all required fields.");
+            return false;
+        }
+        const orderInput = document.getElementById("orderValue");
         // Create new row with the collected data
         var newRow = `
             <tr>
@@ -272,6 +283,7 @@
 
         // Append the new row to the table
         $('#purchaseTableBody').append(newRow);
+        orderInput.value=totalAmount;
         $('#code').val('');
         $('#quantity').val('');
         $('#rate').val('');
@@ -286,7 +298,7 @@
     }
 
     function SavePurchaseDetail() {
-        if(formValidation()){
+        if(!formValidation()){
             return;
         }
          purchaseDetail = {
@@ -310,7 +322,7 @@
             dataType: "json",
             success: function (response) {
                 if (response.success) {
-                    console.log(response.message);
+                    alert("Purchase has been added successfully");
                     window.location.href = '@Url.Action("POEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
@@ -361,7 +373,7 @@
         });
     }
     function updatePurchaseForm() {
-        if(formValidation()){
+        if(!formValidation()){
             return;
         }
        var purchasesDetail = {
@@ -386,7 +398,7 @@
             dataType: "json",
             success: function (response) {
                 if (response.success) {
-                    console.log(response.message);
+                    alert("Purchase has been updated successfully");
                     window.location.href = '@Url.Action("POEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
@@ -459,26 +471,35 @@
         });
     }
     function formValidation(){
-        // Get values from the form
-        var orderNo = $('#orderNo').val();
-        var vendor = $('#vendor').val();
-        var notes = $('#notes').val();
-        var orderValue = $('#orderValue').val();
-        var code = $('#code').val();
-        var shortText = $('#shortText').val();
-        var unit = $('#unit').val();
-        var quantity = $('#quantity').val();
-        var rate = $('#rate').val();
-        var expectedDate = $('#expectedDate').val();
-        var amount = $('#amount').val();
+        const inputs = document.querySelectorAll('.form-control');
+        const inp = document.querySelectorAll('.form-select');
+        let isValid = true;
+        inp.forEach(input=>{
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid'); // Add the red border
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid'); // Remove the red border
+            }
+        });
+        inputs.forEach(input => {
+            if (input.id === 'orderNo' || input.id === 'orderDate') {
+                return;
+            }
 
-        // Validate required fields (you can modify this as per your requirements)
-        if (!code || !quantity || !rate || !amount || !expectedDate || !vendor ||!orderValue || !notes ) {
-            alert("Please fill in all required fields.");
+            // Check if the field is empty
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid'); // Add the red border
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid'); // Remove the red border
+            }
+        });
+        if (isValid) {
+            return true;
+        } else {
+            alert('Please fill out all required fields.');
             return false;
-        }else{
-
-        return true;
         }
 
     }

@@ -146,7 +146,7 @@
             dataType: "json",
             success: function (response) {
                 if (response.success) {
-                    console.log(response.message);
+                    alert("Material has been added successfully");
                     window.location.href = '@Url.Action("MaterialEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })
@@ -210,7 +210,7 @@
             dataType: "json",
             success: function (response) {
                 if (response.success) {
-                    console.log(response.message);
+                    alert("Material has been updated successfully");
                     window.location.href = '@Url.Action("MaterialEntryList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })

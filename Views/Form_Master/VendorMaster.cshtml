@@ -136,9 +136,7 @@
                 input.classList.remove('is-invalid'); // Remove the red border
             }
         });
-        if(!validateMobile()){
-            return;
-        }
+        
 
         if (isValid) {
             alert('Form is valid!');
@@ -171,7 +169,7 @@
                 dataType: "json", // Expected response data type (e.g., JSON)
                 success: function (response) {
                     if (response.success) {
-                        console.log(response.message);
+                        alert("Vendor has been added successfully");
                         window.location.href = '@Url.Action("VendorDetailList", "Home")';
                     } else {
                         alert({ message: "An error occurred" })
@@ -241,6 +239,7 @@
             isChecked: $('#isActive').prop('checked'),
             Vendor_Id: vendorCode
         };
+        console.log("", vendorDetail);
         $.ajax({
             url: '/Form_Master/UpdateVendorDetail',
             data: JSON.stringify(vendorDetail),
@@ -249,7 +248,7 @@
             dataType: "json", 
             success: function (response) {
                 if (response.success) {
-                    console.log(response.message);
+                    alert("Vednor has been updated successfully");
                     window.location.href = '@Url.Action("VendorDetailList", "Home")';
                 } else {
                     alert({ message: "An error occurred" })

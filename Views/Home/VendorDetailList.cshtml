@@ -60,7 +60,7 @@
                     <button class="btn btn-sm btn-success" onclick="editVendor(${vendor.vendor_Id})">Edit</button>
                 </td>
                 <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteVendor(${vendor.code},${vendor.isChecked})">Delete</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteVendor(${vendor.vendor_Id},${vendor.isChecked})">Delete</button>
                 </td>
             </tr>
         `;
@@ -82,7 +82,7 @@
         if (isChecked == false) {
             $.ajax({
                 url: '/Form_Master/DeleteVendorDetail',
-                data: JSON.stringify({Code:code}),
+                data: JSON.stringify({Vendor_Id:code}),
                 type: 'POST', 
                 contentType: "application/json", 
                 dataType: "json",
@@ -100,7 +100,7 @@
                 }
             });
         }else{
-            alert(" Vendor is active, so It cannot be deleted");
+            alert(" Vendor is active, So It cannot be deleted");
         }
     }
 </script>
