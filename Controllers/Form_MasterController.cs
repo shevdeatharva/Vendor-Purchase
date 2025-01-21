@@ -200,20 +200,24 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
-                parameters.Add("@OrderDate", purchaseDetail.OrderDate);
-                parameters.Add("@OrderValue", purchaseDetail.OrderValue);
-                parameters.Add("@Quantity", purchaseDetail.Quantity);
-                parameters.Add("@Amount", purchaseDetail.Amount);
-                parameters.Add("@Rate", purchaseDetail.Rate);
-                parameters.Add("@Name", purchaseDetail.Vendor);
-                parameters.Add("@ValidTill", purchaseDetail.Expected_Date);
-                parameters.Add("@Notes", purchaseDetail.Notes);
-                parameters.Add("@Unit", purchaseDetail.Unit);
-                parameters.Add("@MCode", purchaseDetail.MCode);
-                parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                await _dbService.EditData("sp_ins_vp_Purchase_Master", parameters);
+                foreach (var purchaseDetails in purchaseDetail.PurchaseItems)
+                {
+                    parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
+                    parameters.Add("@OrderDate", purchaseDetail.OrderDate);
+                    parameters.Add("@OrderValue", purchaseDetail.OrderValue);
+                    parameters.Add("@Quantity", purchaseDetails.Quantity);
+                    parameters.Add("@Amount", purchaseDetails.Amount);
+                    parameters.Add("@Rate", purchaseDetails.Rate);
+                    parameters.Add("@Name", purchaseDetail.Vendor);
+                    parameters.Add("@ValidTill", purchaseDetails.Expected_Date);
+                    parameters.Add("@Notes", purchaseDetail.Notes);
+                    parameters.Add("@Unit", purchaseDetail.Unit);
+                    parameters.Add("@MCode", purchaseDetails.MCode);
+                    parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                    await _dbService.EditData("sp_ins_vp_Purchase_Master", parameters);
+                }
                 var res = parameters.Get<int>("@NewId");
+
                 var result = new { success = true, message = res };
                 return Json(result);
             }
@@ -249,20 +253,23 @@ namespace VendorPurchaseProject.Controllers
             try
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@OrderNo", purchaseDetail.OrderNo);
-                parameters.Add("@MCode", purchaseDetail.MCode);
-                parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
-                parameters.Add("@OrderDate", purchaseDetail.OrderDate);
-                parameters.Add("@OrderValue", purchaseDetail.OrderValue);
-                parameters.Add("@Quantity", purchaseDetail.Quantity);
-                parameters.Add("@Amount", purchaseDetail.Amount);
-                parameters.Add("@Rate", purchaseDetail.Rate);
-                parameters.Add("@Vendor", purchaseDetail.Vendor);
-                parameters.Add("@ExpectedDate", purchaseDetail.Expected_Date);
-                parameters.Add("@Notes", purchaseDetail.Notes);
-                parameters.Add("@Unit", purchaseDetail.Unit);
-                parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                await _dbService.EditData("sp_upd_vp_Purchase_Master", parameters);
+                foreach (var purchaseDetails in purchaseDetail.PurchaseItems)
+                {
+                    parameters.Add("@OrderNo", purchaseDetail.OrderNo);
+                    parameters.Add("@MCode", purchaseDetails.MCode);
+                    parameters.Add("@ShortTxt", purchaseDetail.ShortTxt);
+                    parameters.Add("@OrderDate", purchaseDetail.OrderDate);
+                    parameters.Add("@OrderValue", purchaseDetail.OrderValue);
+                    parameters.Add("@Quantity", purchaseDetails.Quantity);
+                    parameters.Add("@Amount", purchaseDetails.Amount);
+                    parameters.Add("@Rate", purchaseDetails.Rate);
+                    parameters.Add("@Vendor", purchaseDetail.Vendor);
+                    parameters.Add("@ExpectedDate", purchaseDetails.Expected_Date);
+                    parameters.Add("@Notes", purchaseDetail.Notes);
+                    parameters.Add("@Unit", purchaseDetail.Unit);
+                    parameters.Add("@NewId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                    await _dbService.EditData("sp_upd_vp_Purchase_Master", parameters);
+                }
                 var res = parameters.Get<int>("@NewId");
                 var result = new { success = true, message = res };
                 return Json(result);

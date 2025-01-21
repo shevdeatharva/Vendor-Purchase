@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "PurchaseMaster";
 }
+
 <title>Purchase Entry Form</title>
 <div class="container mt-5">
     <div class="card shadow-lg">
@@ -104,7 +105,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="date" class="form-control" id="expectedDate" placeholder="expectedDate" />
+                            <input type="date" class="form-control" id="expectedDate" placeholder="expectedDate"  min=""/>
                             <label for="expectedDate">Expected Date</label>
                         </div>
                     </div>
@@ -153,8 +154,8 @@
     }
 </style>
 
-<script type="text/javascript">
-    var purchaseDetail={};
+<script type="text/javascript">             
+    var purchaseDetails = [];
     $(document).ready(function () {
         CurrentDate();
         loadMaterialData();
@@ -163,10 +164,14 @@
         if (vendorCode != null) {
             GetPurchaseDataByCodeId(vendorCode);
         }
+        const dateInput = document.getElementById('expectedDate');
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        dateInput.min = today;
     });
     var materialOrderData={};
     var orderValue;
-    var amountvalue;
+    var amountvalue; 
+    var selectedRowsData = [];
     var totalAmount=0;
     function CurrentDate(){
         const orderDateInput = document.getElementById("orderDate");
@@ -203,6 +208,7 @@
             rateError.style.display = "none";
         }
     } 
+
     function updateAmount() {
         const quantity = document.getElementById("quantity").value;
         const rate = document.getElementById("rate").value;
@@ -211,7 +217,7 @@
         
         if (!isNaN(quantity) && !isNaN(rate) && quantity !== "" && rate !== "") {
             amountInput.value = (parseFloat(quantity) * parseFloat(rate)).toFixed(2); 
-            orderInput.value= amountInput.value
+           // orderInput.value= amountInput.value
         } else {
             amountInput.value = "";
         }
@@ -242,6 +248,27 @@
 
     }
     function AddPurchaseToTable() {
+        $('#purchaseTableBody tr').each(function () {
+            var $row = $(this);
+            const MCode = $row.find('td:eq(1)').text(); // Get MCode from the row
+            const Quantity = parseInt($row.find('td:eq(2)').text(), 10); // Get Quantity and convert to number
+
+            // Find the matching Material Data object by MCode
+            const material = materialData.find(item => item.code === MCode);
+
+            if (material) {
+                const minOrderQuantity = parseInt(material.minOrderQuantity, 10);
+
+                // Check if Quantity exceeds minOrderQuantity
+                if (Quantity > minOrderQuantity) {
+                    // Add a warning or handle the validation
+                    alert(`Quantity (${Quantity}) for MCode ${MCode} exceeds the minimum order quantity (${minOrderQuantity}).`);
+                    $row.css('background-color', '#f8d7da'); // Highlight row in red (optional)
+                    return;
+                }
+            } else {
+                console.warn(`Material data not found for MCode: ${MCode}`);
+            }
           purchaseDetail = {
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
@@ -255,17 +282,31 @@
             ExpectedDate: $('#expectedDate').val(),
             Amount: $('#amount').val(),
         };
+          
+            var rowData = {
+                Code: $row.find('td:eq(1)').text(), // Code
+                Quantity: $row.find('td:eq(2)').text(), // Quantity
+                Rate: $row.find('td:eq(3)').text(), // Rate
+                Amount: $row.find('td:eq(4)').text(), // Amount
+                ExpectedDate: $row.find('td:eq(5)').text() // Exp Date
+            };
+            purchaseDetails.push(rowData);
+
+            console.log("", rowData)
+        });
+       
+        console.log("",selectedRowsData);
         console.log("",totalAmount);
         var code= $('#code').val();
         var quantity = $('#quantity').val();
         var expectedDate= $('#expectedDate').val();
         var amount = $('#amount').val();
         var rate = $('#rate').val();
-        totalAmount += parseFloat(amount) || 0;
         if (!code || !quantity || !rate || !amount || !expectedDate ) {
             alert("Please fill in all required fields.");
             return false;
         }
+        totalAmount += parseFloat(amount) || 0;
         $('#orderValue').val(totalAmount);
         // Create new row with the collected data
         var newRow = `
@@ -286,29 +327,71 @@
         $('#rate').val('');
         $('#amount').val('');
         $('#expectedDate').val('');
+        $('#purchaseTableBody').on('change', 'input[type="checkbox"]', function () {
+            const $row = $(this).closest('tr');
+
+            if ($(this).is(':checked')) {
+                // Make editable by converting cells to input fields
+                $row.find('td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(6)').each(function () {
+                    const currentValue = $(this).text();
+                    $(this).html(`<input type="text" value="${currentValue}" class="form-control" />`);
+                });
+                const $quantityInput = $row.find('td:nth-child(3) input');
+                const $rateInput = $row.find('td:nth-child(4) input');
+                const $amountCell = $row.find('td:nth-child(5)');
+
+                function calculateAmount() {
+                    const quantity = parseFloat($quantityInput.val()) || 0;
+                    const rate = parseFloat($rateInput.val()) || 0;
+                    const amount = (quantity * rate).toFixed(2); // Calculate Amount
+                    $amountCell.text(amount); // Update Amount cell
+                }
+
+                $quantityInput.on('input', calculateAmount);
+                $rateInput.on('input', calculateAmount);
+            } else {
+                // Revert back to plain text when unchecked
+                $row.find('td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(6)').each(function () {
+                    const inputValue = $(this).find('input').val();
+                    $(this).text(inputValue);
+                });
+            }
+        });
     }
     function removeSelectedLines() {
         $('#purchaseTableBody input[type="checkbox"]:checked').each(function () {
             $(this).closest('tr').remove(); // Remove the row containing the checkbox
         });
     }
-
     function SavePurchaseDetail() {
         if(!formValidation()){
+            return;
+        }
+        
+        $('#purchaseTableBody tr').each(function () {
+            var $row = $(this);
+            var rowData = {
+                MCode: $row.find('td:eq(1)').text(), // Code
+                Quantity: $row.find('td:eq(2)').text(), // Quantity
+                Rate: $row.find('td:eq(3)').text(), // Rate
+                Amount: $row.find('td:eq(4)').text(), // Amount
+                Expected_Date: $row.find('td:eq(5)').text() // Exp Date
+            };
+            purchaseDetails.push(rowData);
+        });
+
+        if (purchaseDetails.length === 0) {
+            alert("No data to save.");
             return;
         }
          purchaseDetail = {
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
             Notes: $('#notes').val(),
-            MCode: $('#code').val(),
             ShortTxt: $('#shortText').val(),
             Unit: $('#unit').val(),
-            Quantity: $('#quantity').val(),
-            Rate: $('#rate').val(),
-            ExpectedDate: $('#expectedDate').val(),
-            Amount: $('#amount').val(),
             OrderValue:$('#orderValue').val() ,
+            purchaseItems: purchaseDetails
         };
         $.ajax({
             url: '/Form_Master/SavePurchaseDetail',
@@ -372,23 +455,36 @@
         if(!formValidation()){
             return;
         }
-       var purchasesDetail = {
+        $('#purchaseTableBody tr').each(function () {
+            var $row = $(this);
+            var rowData = {
+                MCode: $row.find('td:eq(1)').text(), // Code
+                Quantity: $row.find('td:eq(2)').text(), // Quantity
+                Rate: $row.find('td:eq(3)').text(), // Rate
+                Amount: $row.find('td:eq(4)').text(), // Amount
+                Expected_Date: $row.find('td:eq(5)').text() // Exp Date
+            };
+            purchaseDetails.push(rowData);
+        });
+
+        if (purchaseDetails.length === 0) {
+            alert("No data to save.");
+            return;
+        }
+        purchaseDetail = {
            OrderNo:vendorCode,
             OrderDate: $('#orderDate').val(),
             Vendor: $('#vendor').val(),
             Notes: $('#notes').val(),
-            OrderValue: $('#orderValue').val(),
-            MCode: $('#code').val(),
             ShortTxt: $('#shortText').val(),
             Unit: $('#unit').val(),
-            Quantity: $('#quantity').val(),
-            Rate: $('#rate').val(),
-            Expected_Date: $('#expectedDate').val(),
-            Amount: $('#amount').val(),
+            OrderValue: $('#orderValue').val(),
+            purchaseItems: purchaseDetails
         };
+        console.log("rkerlew",purchaseDetail);
         $.ajax({
             url: '/Form_Master/UpdatePurchaseDetail',
-            data: JSON.stringify(purchasesDetail),
+            data: JSON.stringify(purchaseDetail),
             type: 'POST',
             contentType: "application/json", 
             dataType: "json",
@@ -467,6 +563,8 @@
         const inputs = document.querySelectorAll('.form-control');
         const inp = document.querySelectorAll('.form-select');
         let isValid = true;
+        const purchaseTableRows = document.querySelectorAll('#purchaseTableBody tr');
+        const hasPurchaseItems = purchaseTableRows.length > 0;
         inp.forEach(input=>{
             if (input.value.trim() === '') {
                 input.classList.add('is-invalid'); // Add the red border
@@ -476,7 +574,7 @@
             }
         });
         inputs.forEach(input => {
-            if (input.id === 'orderNo' || input.id === 'orderDate') {
+            if (input.id === 'orderNo' || input.id === 'orderDate' || input.id==='notes' ){
                 return;
             }
 
@@ -488,6 +586,9 @@
                 input.classList.remove('is-invalid'); // Remove the red border
             }
         });
+        if (hasPurchaseItems) {
+            return true;
+        }
         if (isValid) {
             return true;
         } else {
@@ -497,30 +598,91 @@
 
     }
     function bindRowToFields() {
-        var selectedRow = $('#purchaseTableBody input[type="checkbox"]:checked').closest('tr');
+        const $row = $('#purchaseTableBody input[type="checkbox"]:checked').closest('tr');
 
-        if (selectedRow.length === 0) {
+        if ($row.length === 0) {
             alert('Please select a row to update.');
             return;
         }
 
-        // Get the values from the selected row
-        var code = selectedRow.find('td:nth-child(2)').text();
-        var quantity = selectedRow.find('td:nth-child(3)').text();
-        var rate = selectedRow.find('td:nth-child(4)').text();
-        var amount = selectedRow.find('td:nth-child(5)').text();
-        var expDate = selectedRow.find('td:nth-child(6)').text();
-        totalAmount -= parseFloat(amount) || 0;
-        // Bind the values to the input fields
-        $('#orderValue').val(totalAmount);
-        $('#code').val(code);
-        $('#quantity').val(quantity);
-        $('#rate').val(rate);
-        $('#amount').val(amount);
-        $('#expectedDate').val(expDate);
-         $('#purchaseTableBody input[type="checkbox"]:checked').each(function () {
-            $(this).closest('tr').remove(); // Remove the row containing the checkbox
+        // Revert input fields to plain text and update total amount
+        let totalAmount = 0;
+        $row.each(function () {
+            const $row = $(this);
+
+            // Get updated values
+            const code = $row.find('td:nth-child(2) input').val();
+            const quantity = parseFloat($row.find('td:nth-child(3) input').val()) || 0;
+            const rate = parseFloat($row.find('td:nth-child(4) input').val()) || 0;
+            const expDate = $row.find('td:nth-child(6) input').val();
+            const amount = (quantity * rate).toFixed(2);
+
+            // Update row cells
+            $row.find('td:nth-child(2)').text(code);
+            $row.find('td:nth-child(3)').text(quantity);
+            $row.find('td:nth-child(4)').text(rate);
+            $row.find('td:nth-child(5)').text(amount);
+            $row.find('td:nth-child(6)').text(expDate);
+
+            totalAmount += parseFloat(amount) || 0;
+
+            // Uncheck the checkbox after updating
+            $row.find('input[type="checkbox"]').prop('checked', false);
         });
+
+        // Update the total order value
+        $('#orderValue').val(totalAmount);
     }
+    ////function enableEditing() {
+    //    const selectedRow = $('#purchaseTableBody input[type="checkbox"]:checked').closest('tr');
+
+    //    if (selectedRow.length === 0) {
+    //        alert('Please select a row to edit.');
+    //        return;
+    //    }
+
+    //    // Make the selected row cells editable
+    //    selectedRow.find('td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(6)').each(function () {
+    //        const currentValue = $(this).text();
+    //        $(this).html(`<input type="text" value="${currentValue}" class="form-control" />`);
+    //    });
+
+    //    // Disable the checkbox to avoid re-selection
+    //    selectedRow.find('input[type="checkbox"]').prop('disabled', true);
+    //}
+
+    //function updateRow() {
+    //    const selectedRow = $('#purchaseTableBody input[type="checkbox"]:disabled').closest('tr');
+
+    //    if (selectedRow.length === 0) {
+    //        alert('No row selected for updating. Please edit a row first.');
+    //        return;
+    //    }
+
+    //    // Extract updated values from the input fields
+    //    const code = selectedRow.find('td:nth-child(2) input').val();
+    //    const quantity = selectedRow.find('td:nth-child(3) input').val();
+    //    const rate = selectedRow.find('td:nth-child(4) input').val();
+    //    const expDate = selectedRow.find('td:nth-child(6) input').val();
+    //    const amount = (parseFloat(quantity) * parseFloat(rate)).toFixed(2);
+
+    //    // Update the row with new values
+    //    selectedRow.find('td:nth-child(2)').html(code);
+    //    selectedRow.find('td:nth-child(3)').html(quantity);
+    //    selectedRow.find('td:nth-child(4)').html(rate);
+    //    selectedRow.find('td:nth-child(5)').html(amount);
+    //    selectedRow.find('td:nth-child(6)').html(expDate);
+
+    //    // Re-enable the checkbox
+    //    selectedRow.find('input[type="checkbox"]').prop('disabled', false);
+
+    //    // Update the total amount
+    //    totalAmount = 0;
+    //    $('#purchaseTableBody tr').each(function () {
+    //        const rowAmount = parseFloat($(this).find('td:nth-child(5)').text()) || 0;
+    //        totalAmount += rowAmount;
+    //    });
+    //    $('#orderValue').val(totalAmount);
+    //}
 
 </script>

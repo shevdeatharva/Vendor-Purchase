@@ -12,11 +12,7 @@
             <div class="card-header bg-primary text-white">
                 <h4 class="mb-0">Material Entry Form</h4>
             <div class="row mb-3">
-                <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-success" onclick="SubmitmaterialForm()" id="saveButton">Save</button>
-                    <button type="button" class="btn btn-success" id="updateButton" onclick="updateMaterialForm()" style="display: none;">Update</button>
-                    <button type="reset" class="btn btn-secondary" onclick="location.href='@Url.Action("MaterialEntryList", "Home")'">Cancel</button>
-                </div>
+                
             </div>
             </div>
             <div class="card-body">
@@ -29,13 +25,11 @@
                         <label for="code">Code</label>
                         </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                            <input type="tel" class="form-control" id="reorderLevel" placeholder="Enter Reorder Level" oninput="validateMinOrderLevel()">
-                                <label for="reorderLevel">Reorder Level</label>
-                            <small id="minError" style="color: red; display: none;">Please enter a number.</small>
-                            </div>
-                        </div>
+                    <div class="col-6 text-end">
+                        <button type="submit" class="btn btn-success" onclick="SubmitmaterialForm()" id="saveButton">Save</button>
+                        <button type="button" class="btn btn-success" id="updateButton" onclick="updateMaterialForm()" style="display: none;">Update</button>
+                        <button type="reset" class="btn btn-secondary" onclick="location.href='@Url.Action("MaterialEntryList", "Home")'">Cancel</button>
+                    </div>
                         <div class="col-md-12">
                              
                             <div class="form-floating">
@@ -57,7 +51,14 @@
 
                     <!-- Row 3 -->
                     <div class="row mb-3">
-                        
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="tel" class="form-control mb-3" id="reorderLevel" placeholder="Enter Reorder Level" oninput="validateMinOrderLevel()">
+                            <label for="reorderLevel">Reorder Level</label>
+                            <small id="minError" style="color: red; display: none;">Please enter a number.</small>
+                        </div>
+                    </div>
                         <div class="col-md-6">
                             <div class="form-floating">
                             <input type="tel" class="form-control" id="minOrderQty" placeholder="Enter Min Order Quantity" oninput="validateminOrderQty()">
@@ -67,9 +68,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input type="text" class="form-control" id="unit" placeholder="Enter Unit" oninput="validateUnit()">
+                                <input type="text" class="form-control" id="unit" placeholder="Enter Unit">
                                 <label for="unit">Unit</label>
-                            <small id="unitError" style="color: red; display: none;">Please enter a number.</small>
                             </div>
                         </div>
                         <div class="col-md-6 mt-3">

@@ -1,4 +1,6 @@
-﻿namespace VendorPurchaseProject.Models
+﻿using VendorPurchaseProject.Models.ModelDTO;
+
+namespace VendorPurchaseProject.Models
 {
     public class PurchaseModel
     {
@@ -15,5 +17,7 @@
         public string Rate { get; set; }
         public string Amount { get; set; }
         public string Unit { get; set; }
+        public List<PurchaseItem> PurchaseItems { get; set; }
     }
+    
 }

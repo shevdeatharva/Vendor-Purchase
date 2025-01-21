@@ -1,19 +1,23 @@
 ﻿
-    <title>Vendor Entry Form</title>
-    <!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "VendorMaster";
+}
+
+
+
+<title>Vendor Entry Form</title>
 <script src="~/js/script/baseservice.js"></script>
-         
-    <style>
-        .form-floating label {
-            padding: 0.65rem 0.75rem; /* Adjust padding for smaller inputs */
-        }
+
+<style>
+    .form-floating label {
+        padding: 0.65rem 0.75rem; /* Adjust padding for smaller inputs */
+    }
 
     .is-invalid {
         border-color: red !important;
     }
-    </style>
-    <div class="container mt-4">
+</style>
+@*<div class="container">
     <div class="card shadow-lg">
         <div class="card-header bg-primary text-white">
         <h4>Vendor Entry</h4>
@@ -25,18 +29,23 @@
             <button type="button" class="btn btn-secondary" onclick="location.href='@Url.Action("VendorDetailList", "Home")'">Cancel</button>
     </div>
     </div>
+    <div class="card-body">
     <form>
-        <div class="row">
+        <div class="row mb-3">
             <!-- Column 1 -->
             <div class="col-md-6">
                     <div class="form-floating mt-3 mb-3">
                         <input type="text" class="form-control" id="code" placeholder="code" readonly/>
                         <label for="code">Code</label>
                     </div>
+                    </div>
+                    <div class="col-md-6">
                     <div class="form-floating mt-3 mb-3">
                         <input type="text" class="form-control" id="name" placeholder="Name" />
                         <label for="name">Name</label>
                     </div>
+                    </div>
+                        <div class="col-md-6">
                 <!-- Contact Email -->
                 <div class="form-floating mb-3">
                         <input type="email" class="form-control" id="email" placeholder="Contact Email" oninput="validateEmail()" />
@@ -45,54 +54,140 @@
                 </div>
                 <!-- Valid Till Date -->
                 <div class="form-floating mb-3">
-                    <input type="date" class="form-control" id="validTill" placeholder="Valid Till Date" />
+                            <input type="date" class="form-control" id="validTill" placeholder="Valid Till Date" min="" />
                     <label for="validTill">Valid Till Date</label>
+                </div>
                 </div>
             </div>
 
             <!-- Column 2 -->
-            <div class="col-md-6">
-                
+            <div class="row">
+               <div class="col-6">
                 <!-- Address Line 1 -->
                 <div class="form-floating mt-3 mb-3">
                     <input type="text" class="form-control" id="address1" placeholder="Address Line 1" />
                     <label for="address1">Address Line 1</label>
                 </div>
-               
+
                 <!-- Address Line 2 -->
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="address2" placeholder="Address Line 2" />
                     <label for="address2">Address Line 2</label>
                 </div>
-                <!-- Contact Number -->
+                        </div>
+                        <!-- Contact Number -->
+                        <div class="col-6">
                 <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="contactNo" placeholder="Contact No" oninput="validateMobile()" />
                     <label for="contactNo">Contact No</label>
                         <small id="contactError" style="color: red; display: none;">Please enter a 10-digit valid mobile number.</small>
                 </div>
-               
+                            <div class="form-check form-switch mb-3 mx-3">
+                                <input class="form-check-input" type="checkbox" id="isActive" />
+                                <label class="form-check-label" for="isActive">Active</label>
+                            </div>
+                        </div>
+
             </div>
             <!-- IsActive -->
-            <div class="form-check form-switch mb-3 mx-3">
-                <input class="form-check-input" type="checkbox" id="isActive" />
-                <label class="form-check-label" for="isActive">Active</label>
-            </div>
-        </div>
 
-     
     </form>
 
+        </div>
     </div>
+</div>*@
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Vendor Entry Form</h4>
+            <div class="row mb-3">
+            </div>
+        </div>
+        <div class="card-body">
+            <form>
+                <!-- Row 1 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="code" placeholder="code" readonly />
+                            <label for="code">Code</label>
+                        </div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <button type="button" class="btn btn-success" onclick="SubmitVendorForm()" id="saveButton"> Save</button>
+                        <button type="button" class="btn btn-success" id="updateButton" onclick="updateVendorForm()" style="display: none;">Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="location.href='@Url.Action("VendorDetailList", "Home")'">Cancel</button>
+                    </div>
+                    <div class="col-12">
 
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="name" placeholder="Name" />
+                            <label for="name">Name</label>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="address1" placeholder="Address Line 1" />
+                            <label for="address1">Address Line 1</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="address2" placeholder="Address Line 2" />
+                            <label for="address2">Address Line 2</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="row mb-3">
+
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="email" placeholder="Contact Email" oninput="validateEmail()" />
+                            <label for="email">Contact Email</label>
+                            <small id="emailError" style="color: red; display: none;">Please enter a valid email syntax.</small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-floating mb-3 col-6">
+                            <input type="text" class="form-control" id="contactNo" placeholder="Contact No" oninput="validateMobile()" />
+                            <label for="contactNo">Contact No</label>
+                            <small id="contactError" style="color: red; display: none;">Please enter a 10-digit valid mobile number.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="date" class="form-control" id="validTill" placeholder="Valid Till Date" min="" />
+                            <label for="validTill">Valid Till Date</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                         <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="isActive" />
+                                <label class="form-check-label" for="isActive">Active</label>
+                            </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
     </div>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/boot@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript">
-    //$(document).ready(function () {
-
-    //getQueryStringValue('vendorCode');
-    //});
-     function validateEmail() {
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        const dateInput = document.getElementById('validTill');
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        dateInput.min = today;
+        //getQueryStringValue('vendorCode');
+    });
+    function validateEmail() {
         var email = document.getElementById("email").value
         const emailError = document.getElementById("emailError");
         var emailRegex = /^([\w-\.]+\u0040([\w-]+\.)+[\w-]{2,4})?$/;
@@ -136,7 +231,7 @@
                 input.classList.remove('is-invalid'); // Remove the red border
             }
         });
-        
+
 
         if (isValid) {
             return true;
@@ -145,41 +240,41 @@
             return false;
         }
     }
-    function SubmitVendorForm(){
-        if(!formValidation()){
-            return;
+    function SubmitVendorForm() {
+        if (!formValidation()) {
+            return false;
         }
-            var vendorDetail = {
-                Name: $('#name').val(),
-                Email: $('#email').val(),
-                AddressLine1: $('#address1').val(),
-                ValidTill: $('#validTill').val(),
-                Contact: $('#contactNo').val(),
-                AddressLine2: $('#address2').val(),
-                isChecked: $('#isActive').prop('checked')
+        var vendorDetail = {
+            Name: $('#name').val(),
+            Email: $('#email').val(),
+            AddressLine1: $('#address1').val(),
+            ValidTill: $('#validTill').val(),
+            Contact: $('#contactNo').val(),
+            AddressLine2: $('#address2').val(),
+            isChecked: $('#isActive').prop('checked')
 
-            };
-            console.log("kdflsfs", vendorDetail);
-            $.ajax({
-                url: '/Form_Master/SaveVendorDetail',
-                data: JSON.stringify(vendorDetail),
-                type: 'POST', // POST, GET, PUT, DELETE, etc.
-                contentType: "application/json", // Specify content type (e.g., JSON or FormData)
-                dataType: "json", // Expected response data type (e.g., JSON)
-                success: function (response) {
-                    if (response.success) {
-                        alert("Vendor has been added successfully");
-                        window.location.href = '@Url.Action("VendorDetailList", "Home")';
-                    } else {
-                        alert({ message: "An error occurred" })
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error:", error);
-                    errorCallback({ message: "An error occurred" });
+        };
+        console.log("kdflsfs", vendorDetail);
+        $.ajax({
+            url: '/Form_Master/SaveVendorDetail',
+            data: JSON.stringify(vendorDetail),
+            type: 'POST', // POST, GET, PUT, DELETE, etc.
+            contentType: "application/json", // Specify content type (e.g., JSON or FormData)
+            dataType: "json", // Expected response data type (e.g., JSON)
+            success: function (response) {
+                if (response.success) {
+                    alert("Vendor has been added successfully");
+                    window.location.href = '@Url.Action("VendorDetailList", "Home")';
+                } else {
+                    alert({ message: "An error occurred" })
                 }
-            });
-       
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                errorCallback({ message: "An error occurred" });
+            }
+        });
+
     }
 
     function getQueryStringValue(key) {
@@ -191,12 +286,12 @@
         GetVendorDataByCodeId(vendorCode);
     }
     console.log('Vendor Code:', vendorCode);
-    function GetVendorDataByCodeId(vendorCode){
+    function GetVendorDataByCodeId(vendorCode) {
         $.ajax({
             url: '/Form_Master/GetVendorDataByVendorCode',
-            data: JSON.stringify({Vendor_Id:vendorCode}),
+            data: JSON.stringify({ Vendor_Id: vendorCode }),
             type: 'POST',
-            contentType: "application/json", 
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 if (response) {
@@ -224,7 +319,7 @@
             }
         });
     }
-    function updateVendorForm(){
+    function updateVendorForm() {
         if (!formValidation()) {
             return;
         }
@@ -242,9 +337,9 @@
         $.ajax({
             url: '/Form_Master/UpdateVendorDetail',
             data: JSON.stringify(vendorDetail),
-            type: 'POST', 
+            type: 'POST',
             contentType: "application/json",
-            dataType: "json", 
+            dataType: "json",
             success: function (response) {
                 if (response.success) {
                     alert("Vednor has been updated successfully");
@@ -259,4 +354,4 @@
             }
         });
     }
-        </script>
+</script>
